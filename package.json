@@ -1,0 +1,51 @@
+{
+  "name": "sith-api",
+  "version": "0.0.1",
+  "description": "RESTful node.js service backing the SITH app.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nerdybeast/sith-api"
+  },
+  "scripts": {
+    "start": "npm run build && node dist/server.js",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@nestjs/common": "^4.4.0",
+    "@nestjs/core": "^4.4.0",
+    "@nestjs/microservices": "^4.4.0",
+    "@nestjs/testing": "^4.4.0",
+    "@nestjs/websockets": "^4.4.0",
+    "body-parser": "^1.18.2",
+    "camelcase-keys": "^4.2.0",
+    "cors": "2.8.4",
+    "debug": "^3.1.0",
+    "got": "8.0.1",
+    "jsforce": "^1.8.0",
+    "jsonapi-serializer": "^3.5.5",
+    "jsonwebtoken": "8.1.0",
+    "lodash.camelcase": "^4.3.0",
+    "lodash.mapkeys": "^4.6.0",
+    "morgan": "^1.9.0",
+    "redis": "2.8.0",
+    "reflect-metadata": "^0.1.10",
+    "rxjs": "^5.4.0",
+    "typescript": "^2.5.2"
+  },
+  "devDependencies": {
+    "@types/body-parser": "^1.16.8",
+    "@types/camelcase-keys": "^4.0.0",
+    "@types/cors": "^2.8.3",
+    "@types/debug": "0.0.30",
+    "@types/express": "^4.11.0",
+    "@types/got": "^7.1.5",
+    "@types/jsforce": "^1.8.7",
+    "@types/jsonwebtoken": "^7.2.5",
+    "@types/morgan": "^1.7.35",
+    "@types/node": "^8.0.28",
+    "@types/redis": "^2.8.3",
+    "nodemon": "^1.12.1",
+    "ts-node": "^4.0.2"
+  }
+}
