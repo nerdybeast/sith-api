@@ -8,10 +8,12 @@
     "url": "https://github.com/nerdybeast/sith-api"
   },
   "scripts": {
-    "start": "npm run build && node dist/server.js",
-    "build": "tsc"
+    "start": "node dist/server.js",
+    "build": "tsc",
+    "postinstall": "npm run build"
   },
   "dependencies": {
+    "@types/node": "^8.5.8",
     "@nestjs/common": "^4.4.0",
     "@nestjs/core": "^4.4.0",
     "@nestjs/microservices": "^4.4.0",
@@ -43,7 +45,6 @@
     "@types/jsforce": "^1.8.7",
     "@types/jsonwebtoken": "^7.2.5",
     "@types/morgan": "^1.7.35",
-    "@types/node": "^8.0.28",
     "@types/redis": "^2.8.3",
     "nodemon": "^1.12.1",
     "ts-node": "^4.0.2"
