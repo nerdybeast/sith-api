@@ -13,6 +13,7 @@ const Credentials = createRouteParamDecorator((data, req) => {
 	connectionDetails.orgId = req.headers['org-id'];
 	connectionDetails.sessionId = req.headers['salesforce-session-token'];
 	connectionDetails.userId = req.headers['user-id'];
+	connectionDetails.orgVersion = req.headers['org-version'];
 
 	return connectionDetails;
 });
@@ -28,7 +29,7 @@ export class SalesforceController {
 		const apexLogs = await standardSobjectService.getApexLogs(credentials.userId, fieldNames);
 
 		const data = new jsonapi.Serializer('apex-log', {
-			attributes: fieldNames,
+			attributes: ['body', ...fieldNames],
 			keyForAttribute: 'camelCase'
 		}).serialize(apexLogs);
 

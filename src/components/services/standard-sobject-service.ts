@@ -41,7 +41,25 @@ export class StandardSobjectService {
 		this.debug.verbose('fieldsToQuery', fieldsToQuery);
 		
 		const apexLogQueryResult = await this._query(`Select ${fieldsToQuery} From ApexLog Where LogUserId = '${userId}'`);
-		return apexLogQueryResult.records as ApexLog[];
+		const apexLogRecords = apexLogQueryResult.records as ApexLog[];
+
+		const debugLogPromises = apexLogRecords.map(async log => {
+			const body = await this.getDebugLog(log.id, this.connectionDetails.orgVersion);
+			return { id: log.id, body };
+		});
+
+		const debugLogs = (await Promise.all(debugLogPromises)) as any[];
+
+		const apexLogs = apexLogRecords.map(log => {
+			
+			const debugLog = debugLogs.find(x => x.id === log.id);
+			if(!debugLog.body) return;
+
+			log.body = debugLog.body;
+			return log;
+		});
+
+		return apexLogs.filter(log => log.body);
 	}
 
 	async getDebugLog(id: string, apiVersion: string) : Promise<string> {

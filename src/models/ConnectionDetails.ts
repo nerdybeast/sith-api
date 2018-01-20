@@ -3,4 +3,5 @@ export class ConnectionDetails {
 	instanceUrl: string;
 	orgId: string;
 	userId: string;
+	orgVersion: string;
 }
