@@ -5,7 +5,7 @@ import { ApexLog } from '../../models/sobjects/ApexLog';
 import * as jsforce from 'jsforce';
 import { ConnectionDetails } from '../../models/ConnectionDetails';
 import { QueryResult } from '../../models/query-result';
-import { SobjectMeta } from '../../models/salesforce-metadata/sobject-meta';
+import { SobjectDescribe } from '../../models/salesforce-metadata/SobjectDescribe';
 import { TraceFlag } from '../../models/sobjects/TraceFlag';
 import { Debug } from '../../utilities/debug';
 import { DebugLevel } from '../../models/sobjects/DebugLevel';
@@ -15,6 +15,9 @@ import * as got from 'got';
 //This package is not es6 module friendly, have to import the commonjs way.
 import camelCaseKeys = require('camelcase-keys');
 import { CrudResult } from '../../models/sobjects/CrudResult';
+import { GlobalDescribe } from '../../models/salesforce-metadata/GlobalDescribe';
+import { SobjectDescribeBase } from '../../models/salesforce-metadata/SobjectDescribeBase';
+import { CrudAction } from '../../models/enums/crud-action';
 
 export class StandardSobjectService {
 
@@ -107,8 +110,7 @@ export class StandardSobjectService {
 			LogType: traceFlag.logType
 		};
 
-		const result = await this.conn.tooling.sobject('TraceFlag').create(transformedTraceFlag);
-		return result as CrudResult;
+		return await this._create('TraceFlag', transformedTraceFlag);
 	}
 
 	async updateTraceFlag(traceFlag: TraceFlag) : Promise<CrudResult> {
@@ -123,13 +125,11 @@ export class StandardSobjectService {
 			DebugLevelId: traceFlag.debugLevelId
 		};
 
-		const result = await this.conn.tooling.sobject('TraceFlag').update(transformedTraceFlag);
-		return result as CrudResult;
+		return await this._update('TraceFlag', transformedTraceFlag);
 	}
 
 	async deleteTraceFlagById(id: string) : Promise<CrudResult> {
-		const result = await this.conn.tooling.sobject('TraceFlag').delete(id);
-		return result as CrudResult;
+		return await this._delete('TraceFlag', id);
 	}
 
 	async getDebugLevels(ids: string[], fieldsToQuery: string[]) : Promise<DebugLevel[]> {
@@ -157,11 +157,47 @@ export class StandardSobjectService {
 		return fieldNames;
 	}
 
+	private async _create(sobjectName: string, data: any) : Promise<CrudResult> {
+		return this._performCrudAction(sobjectName, data, CrudAction.CREATE);
+	}
+
+	private async _update(sobjectName: string, data: any) : Promise<CrudResult> {
+		return this._performCrudAction(sobjectName, data, CrudAction.UPDATE);
+	}
+
+	private async _delete(sobjectName: string, data: any) : Promise<CrudResult> {
+		return this._performCrudAction(sobjectName, data, CrudAction.DELETE);
+	}
+
+	private async _upsert(sobjectName: string, data: any) : Promise<CrudResult> {
+		return this._performCrudAction(sobjectName, data, CrudAction.UPSERT);
+	}
+
+	private async _performCrudAction(sobjectName: string, data: any, action: CrudAction) {
+
+		const sobject = await this._getSobjectMetadata(sobjectName);
+		let result: any = null;
+
+		if(sobject.isTooling) {
+			result = await this.conn.tooling.sobject(sobjectName)[action](data);
+		} else {
+			result = await this.conn.sobject(sobjectName)[action](data);
+		}
+		
+		return result as CrudResult;
+	}
+
 	private async _query(soql: string, isToolingQuery: boolean = false) : Promise<QueryResult> {
+		
+		this.debug.verbose(`_query() parameters:`);
+		this.debug.verbose(`soql`, soql);
+		this.debug.verbose(`isToolingQuery`, isToolingQuery);
+
 		try {
 
 			let queryResult = await (isToolingQuery ? this.conn.tooling.query(soql) : this.conn.query(soql));
-			
+			this.debug.info(`Raw query result`, queryResult);
+
 			//1. To help be json api compliant
 			//2. Some data from Salesforce comes back as camelCase, other is PascalCased, don't want to have to
 			//force a mapping between these variations in our models so force camelCase here.
@@ -170,21 +206,27 @@ export class StandardSobjectService {
 			return queryResult as QueryResult;
 
 		} catch (error) {
+			this.debug.error(`_query() error`, error);
 			if(error.errorCode === 'INVALID_SESSION_ID') throw new UnauthorizedException(error.message);
 			throw error;
 		}
 	}
 
-	private async _describeSobject(sobjectName: string, orgId: string) : Promise<SobjectMeta> {
+	private async _getSobjectMetadata(sobjectName: string) : Promise<SobjectDescribeBase> {
+		const allSobjects = await this._globalDescribe(this.connectionDetails.orgId);
+		return allSobjects.find(sobject => sobject.name === sobjectName);
+	}
+
+	private async _describeSobject(sobjectName: string, orgId: string) : Promise<SobjectDescribe> {
 
 		const globalDescribe = await this._globalDescribe(orgId);
 		const sobject = globalDescribe.find(x => x.name === sobjectName);
 
 		const sobjectDescription = await (sobject.isTooling ? this.conn.tooling.describe(sobjectName) : this.conn.describe(sobjectName));
-		return sobjectDescription as SobjectMeta;
+		return sobjectDescription as SobjectDescribe;
 	}
 
-	private async _globalDescribe(orgId: string) : Promise<any[]> {
+	private async _globalDescribe(orgId: string) : Promise<SobjectDescribeBase[]> {
 
 		const cacheKey = `GLOBAL_SOBJECT_DESCRIBE_BY_ORG:${orgId}`;
 		const cachedValue = await this.cache.get(cacheKey) as any[];
@@ -192,25 +234,25 @@ export class StandardSobjectService {
 		if(cachedValue) return cachedValue;
 
 		const [ standardSobjectDescribe, toolingSobjectDescribe ] = await Promise.all([
-			this.conn.describeGlobal(),
-			this.conn.tooling.describeGlobal()
+			this.conn.describeGlobal() as GlobalDescribe,
+			this.conn.tooling.describeGlobal() as GlobalDescribe
 		]);
 
-		const standardSobjects = standardSobjectDescribe.sobjects.map(sobject => {
-			return { name: sobject.name, isTooling: false };
+		standardSobjectDescribe.sobjects.forEach(sobject => {
+			sobject.isTooling = true;
 		});
 
-		const toolingSobjects = toolingSobjectDescribe.sobjects.map(sobject => {
+		toolingSobjectDescribe.sobjects.forEach(sobject => {
 
 			//A true tooling object is one that exists in the list of tooling sobjects but NOT in the list of standard sobjects.
-			//Some sobjects exist in both lists.
-			const standardSobjectMatch = standardSobjects.find(x => x.name === sobject.name);
+			//Some sobjects exist in both lists which in that case, they are considered standard sobjects.
+			const standardSobjectMatch = standardSobjectDescribe.sobjects.find(x => x.name === sobject.name);
 			const isTooling = standardSobjectMatch === undefined;
 
-			return { name: sobject.name, isTooling };
+			sobject.isTooling = isTooling;
 		});
 
-		const allSobjects = [...standardSobjects, ...toolingSobjects];
+		const allSobjects = [...standardSobjectDescribe.sobjects, ...toolingSobjectDescribe.sobjects];
 
 		//Cache for 12 hours
 		await this.cache.set(cacheKey, allSobjects, (60 * 60 * 12));

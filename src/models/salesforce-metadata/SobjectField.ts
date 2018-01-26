@@ -1,4 +1,4 @@
-import { PicklistValue } from './picklist-value';
+import { PicklistValue } from './PicklistValue';
 
 export class SobjectField {
 	aggregatable: boolean;
