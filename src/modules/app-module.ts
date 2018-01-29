@@ -1,11 +1,12 @@
-import { Module, NestModule } from '@nestjs/common';
+import { Module, RequestMethod } from '@nestjs/common';
 import { AppController } from './app-controller';
 import { UserModule } from './user/user-module';
 import { OrgModule } from './org/org-module';
-import { SalesforceModule } from './salesforce/salesforce-module';
+import { ConnectionDetailsMiddleware } from '../middleware/ConnectionDetailsMiddleware';
+import { SobjectsModule } from './api/sobjects-module';
 
 @Module({
-	modules: [UserModule, OrgModule, SalesforceModule],
+	modules: [UserModule, OrgModule, SobjectsModule],
 	controllers: [AppController]
 })
 export class ApplicationModule {}
