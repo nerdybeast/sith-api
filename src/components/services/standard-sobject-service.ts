@@ -71,7 +71,11 @@ export class StandardSobjectService {
 			headers: { Authorization: `Bearer ${this.connectionDetails.sessionId}` }
 		});
 
-		return response.body;
+		if(response.body === null || response.body === undefined) {
+			response.body = '';
+		}
+
+		return response.body.trim();
 	}
 
 	async getTraceFlagById(id: string) : Promise<TraceFlag> {
