@@ -1,9 +1,10 @@
 import { Controller, Body, Param, Get, Post, Patch, Delete, HttpCode } from '@nestjs/common';
 import { UserInfo } from '../../../../decorators/UserInfoDecorator';
 import { ConnectionDetails } from '../../../../models/ConnectionDetails';
-import { StandardSobjectService } from '../../../../components/services/standard-sobject-service';
+import { AbstractSobjectService } from '../../../../components/services/AbstractSobjectService';
 import * as jsonapi from 'jsonapi-serializer';
 import { TraceFlag } from '../../../../models/sobjects/TraceFlag';
+import { TraceFlagService } from '../../../../components/services/TraceFlagService';
 
 @Controller('api/sobjects')
 export class TraceFlagController {
@@ -11,14 +12,14 @@ export class TraceFlagController {
 	@Get('/trace-flags')
 	async traceFlagsAsync(@UserInfo() connectionDetails: ConnectionDetails) {
 
-		const standardSobjectService = new StandardSobjectService(connectionDetails);
+		const traceFlagService = new TraceFlagService(connectionDetails);
 		
 		const [ traceFlagFieldNames, debugLevelFieldNames ] = await Promise.all([
-			standardSobjectService.getSobjectFieldNames('TraceFlag', connectionDetails.orgId),
-			standardSobjectService.getSobjectFieldNames('DebugLevel', connectionDetails.orgId)
+			traceFlagService.getSobjectFieldNames(),
+			traceFlagService.getSobjectFieldNames('DebugLevel')
 		]);
 		
-		const traceFlags = await standardSobjectService.getTraceFlags(connectionDetails.userId, traceFlagFieldNames, debugLevelFieldNames);
+		const traceFlags = await traceFlagService.getTraceFlags(connectionDetails.userId, traceFlagFieldNames, debugLevelFieldNames);
 
 		const data = new jsonapi.Serializer('trace-flag', {
 			attributes: [...traceFlagFieldNames, 'debugLevel'],
@@ -50,12 +51,12 @@ export class TraceFlagController {
 			});
 		});
 
-		const standardSobjectService = new StandardSobjectService(connectionDetails);
-		const result = await standardSobjectService.createTraceFlag(newTraceFlag as TraceFlag);
+		const traceFlagService = new TraceFlagService(connectionDetails);
+		const result = await traceFlagService.create(newTraceFlag as TraceFlag);
 		
 		const [ traceFlag, fieldNames ] = await Promise.all([
-			standardSobjectService.getTraceFlagById(result.id),
-			standardSobjectService.getSobjectFieldNames('TraceFlag', connectionDetails.orgId)
+			traceFlagService.retrieve(result.id),
+			traceFlagService.getSobjectFieldNames()
 		]);
 
 		const data = new jsonapi.Serializer('trace-flag', {
@@ -80,12 +81,12 @@ export class TraceFlagController {
 			});
 		});
 
-		const standardSobjectService = new StandardSobjectService(connectionDetails);
-		await standardSobjectService.updateTraceFlag(traceFlag as TraceFlag);
+		const traceFlagService = new TraceFlagService(connectionDetails);
+		await traceFlagService.update(traceFlag as TraceFlag);
 
 		const [ updatedTraceFlag, fieldNames ] = await Promise.all([
-			standardSobjectService.getTraceFlagById(traceFlagId),
-			standardSobjectService.getSobjectFieldNames('TraceFlag', connectionDetails.orgId)
+			traceFlagService.retrieve(traceFlagId),
+			traceFlagService.getSobjectFieldNames()
 		]);
 
 		const data = new jsonapi.Serializer('trace-flag', {
@@ -100,7 +101,7 @@ export class TraceFlagController {
 	@HttpCode(204) //No content
 	async deleteTraceFlagAsync(@Param() params, @UserInfo() connectionDetails: ConnectionDetails) {
 		const traceFlagId = params.id;
-		const standardSobjectService = new StandardSobjectService(connectionDetails);
-		await standardSobjectService.deleteTraceFlagById(traceFlagId);
+		const traceFlagService = new TraceFlagService(connectionDetails);
+		await traceFlagService.delete(traceFlagId);
 	}
 }

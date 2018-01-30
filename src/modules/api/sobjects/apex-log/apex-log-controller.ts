@@ -1,8 +1,9 @@
 import { Controller, Body, Get, Post } from '@nestjs/common';
 import { UserInfo } from '../../../../decorators/UserInfoDecorator';
 import { ConnectionDetails } from '../../../../models/ConnectionDetails';
-import { StandardSobjectService } from '../../../../components/services/standard-sobject-service';
+import { AbstractSobjectService } from '../../../../components/services/AbstractSobjectService';
 import * as jsonapi from 'jsonapi-serializer';
+import { ApexLogService } from '../../../../components/services/ApexLogService';
 
 @Controller('api/sobjects')
 export class ApexLogController {
@@ -10,10 +11,9 @@ export class ApexLogController {
 	@Get('/apex-logs')
 	async apexLogsAsync(@UserInfo() connectionDetails: ConnectionDetails) : Promise<any> {
 
-		const standardSobjectService = new StandardSobjectService(connectionDetails);
-
-		const fieldNames = await standardSobjectService.getSobjectFieldNames('ApexLog', connectionDetails.orgId);
-		const apexLogs = await standardSobjectService.getApexLogs(connectionDetails.userId, fieldNames);
+		const apexLogService = new ApexLogService(connectionDetails);
+		const fieldNames = await apexLogService.getSobjectFieldNames();
+		const apexLogs = await apexLogService.getApexLogs(connectionDetails.userId, fieldNames);
 
 		const data = new jsonapi.Serializer('apex-log', {
 			attributes: ['body', ...fieldNames],
@@ -26,9 +26,9 @@ export class ApexLogController {
 	@Post('/apex-log-body')
 	async debugLogAsync(@UserInfo() connectionDetails: ConnectionDetails, @Body() body) {
 
-		const standardSobjectService = new StandardSobjectService(connectionDetails);
+		const apexLogService = new ApexLogService(connectionDetails);
 
-		const apexLogBody = await standardSobjectService.getDebugLog(body.apexLogId, body.apiVersion);
+		const apexLogBody = await apexLogService.getDebugLog(body.apexLogId);
 		return apexLogBody;
 	}
 
