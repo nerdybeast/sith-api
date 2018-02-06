@@ -13,7 +13,8 @@
     "dev": "nodemon",
     "debug": "ts-node --inspect=5858 index.ts",
     "build": "tsc",
-    "prod": "tsc && node dist/server.js"
+    "prod": "tsc && node dist/server.js",
+    "postinstall": "npm run build"
   },
   "dependencies": {
     "@nestjs/common": "^4.4.0",
