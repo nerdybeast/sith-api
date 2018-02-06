@@ -20,21 +20,7 @@ export class TraceFlagController {
 		]);
 		
 		const traceFlags = await traceFlagService.getTraceFlags(connectionDetails.userId, traceFlagFieldNames, debugLevelFieldNames);
-
-		const data = new jsonapi.Serializer('trace-flag', {
-			attributes: [...traceFlagFieldNames, 'debugLevel'],
-			keyForAttribute: 'camelCase',
-			typeForAttribute(attr) {
-				switch(attr) {
-					case 'debugLevel': return 'debug-level';
-					default: return attr;
-				}
-			},
-			debugLevel: {
-				ref: 'id',
-				attributes: debugLevelFieldNames
-			}
-		}).serialize(traceFlags);
+		const data = TraceFlagService.serializeToJsonApi(traceFlags, traceFlagFieldNames, debugLevelFieldNames);
 
 		return data;
 	}

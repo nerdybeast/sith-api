@@ -5,6 +5,7 @@ import * as bodyParser from 'body-parser';
 import { ApplicationModule } from './modules/app-module';
 import { JsonApiInterceptor } from './components/interceptors/json-api-interceptor';
 import { InvalidSessionIdFilter } from './components/filters/invalid-session-id';
+import { Debug } from './utilities/debug';
 
 (async function bootstrap() {
 	const app = await NestFactory.create(ApplicationModule);
@@ -18,4 +19,7 @@ import { InvalidSessionIdFilter } from './components/filters/invalid-session-id'
 
 	const port = Number(process.env.PORT) || 5000;
 	await app.listen(port, () => console.log(`\nApi is running on port ${port}...\n`));
+
+	const debug = new Debug('server');
+	debug.verbose('main process id', process.pid);
 })();

@@ -18,4 +18,25 @@ export class TraceFlag extends Sobject {
 	validation: LogLevel;
 	visualforce: LogLevel;
 	workflow: LogLevel;
+
+	// constructor(json?: any) {
+
+	// 	super();
+	// 	if(!json) return;
+
+	// 	this.apexCode = json.apexCode;
+	// 	this.apexProfiling = json.apexProfiling;
+	// 	this.callout = json.callout;
+	// 	this.database = json.database;
+	// 	this.debugLevel = json.debugLevel;
+	// 	this.debugLevelId = json.debugLevelId;
+	// 	this.expirationDate = json.expirationDate;
+	// 	this.logType = json.logType;
+	// 	this.startDate = json.startDate;
+	// 	this.system = json.system;
+	// 	this.tracedEntityId = json.tracedEntityId;
+	// 	this.validation = json.validation;
+	// 	this.visualforce = json.visualforce;
+	// 	this.workflow = json.workflow;
+	// }
 }

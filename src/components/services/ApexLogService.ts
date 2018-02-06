@@ -19,8 +19,7 @@ export class ApexLogService extends AbstractSobjectService {
 		this.debug.verbose('userId', userId);
 		this.debug.verbose('fieldsToQuery', fieldsToQuery);
 		
-		// const apexLogQueryResult = await this._query(`Select ${fieldsToQuery} From ApexLog Where LogUserId = '${userId}'`);
-		const apexLogQueryResult = await this.query(fieldsToQuery, `Where LogUserId = '${userId}'`);
+		const apexLogQueryResult = await this.query(fieldsToQuery, `Where LogUserId = '${userId}' ORDER BY StartTime DESC LIMIT 25`);
 		const apexLogRecords = apexLogQueryResult.records as ApexLog[];
 
 		const debugLogPromises = apexLogRecords.map(async log => {

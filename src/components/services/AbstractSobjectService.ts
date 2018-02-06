@@ -42,12 +42,12 @@ export abstract class AbstractSobjectService {
 
 		sobjectName = sobjectName || this.sobjectName;
 
-		const cacheKey = `SOBJECT_FIELD_NAMES:${this.connectionDetails.orgId}:${sobjectName}`;
+		const cacheKey = `SOBJECT_FIELD_NAMES:${this.connectionDetails.organizationId}:${sobjectName}`;
 		const cachedValue = await this.cache.get<string[]>(cacheKey);
 
 		if(cachedValue) return cachedValue;
 
-		const meta = await this._describeSobject(sobjectName, this.connectionDetails.orgId);
+		const meta = await this._describeSobject(sobjectName, this.connectionDetails.organizationId);
 		const fieldNames = meta.fields.map(field => camelCase(field.name));
 
 		//Cache for 12 hours
@@ -122,6 +122,7 @@ export abstract class AbstractSobjectService {
 			this.debug.error(`${action} failed for ${this.sobjectName}`);
 			this.debug.error(`data`, data);
 			this.debug.error(`error`, error);
+			if(error.errorCode === 'INVALID_SESSION_ID') throw new UnauthorizedException(error.message);
 			throw error;
 		}
 
@@ -153,50 +154,65 @@ export abstract class AbstractSobjectService {
 	}
 
 	private async _getSobjectMetadata(sobjectName: string) : Promise<SobjectDescribeBase> {
-		const allSobjects = await this._globalDescribe(this.connectionDetails.orgId);
+		const allSobjects = await this._globalDescribe(this.connectionDetails.organizationId);
 		return allSobjects.find(sobject => sobject.name === sobjectName);
 	}
 
-	private async _describeSobject(sobjectName: string, orgId: string) : Promise<SobjectDescribe> {
+	private async _describeSobject(sobjectName: string, organizationId: string) : Promise<SobjectDescribe> {
 
-		const globalDescribe = await this._globalDescribe(orgId);
-		const sobject = globalDescribe.find(x => x.name === sobjectName);
+		try {
+			
+			const globalDescribe = await this._globalDescribe(organizationId);
+			const sobject = globalDescribe.find(x => x.name === sobjectName);
 
-		const sobjectDescription = await (sobject.isTooling ? this.conn.tooling.describe(sobjectName) : this.conn.describe(sobjectName));
-		return sobjectDescription as SobjectDescribe;
+			const sobjectDescription = await (sobject.isTooling ? this.conn.tooling.describe(sobjectName) : this.conn.describe(sobjectName));
+			return sobjectDescription as SobjectDescribe;
+
+		} catch (error) {
+			this.debug.error(`_describeSobject() error`, error);
+			if(error.errorCode === 'INVALID_SESSION_ID') throw new UnauthorizedException(error.message);
+			throw error;
+		}
 	}
 
-	private async _globalDescribe(orgId: string) : Promise<SobjectDescribeBase[]> {
+	private async _globalDescribe(organizationId: string) : Promise<SobjectDescribeBase[]> {
+		try {
+		
+			const cacheKey = `GLOBAL_SOBJECT_DESCRIBE_BY_ORG:${organizationId}`;
+			const cachedValue = await this.cache.get(cacheKey) as any[];
 
-		const cacheKey = `GLOBAL_SOBJECT_DESCRIBE_BY_ORG:${orgId}`;
-		const cachedValue = await this.cache.get(cacheKey) as any[];
+			if(cachedValue) return cachedValue;
 
-		if(cachedValue) return cachedValue;
+			const [ standardSobjectDescribe, toolingSobjectDescribe ] = await Promise.all([
+				this.conn.describeGlobal() as GlobalDescribe,
+				this.conn.tooling.describeGlobal() as GlobalDescribe
+			]);
 
-		const [ standardSobjectDescribe, toolingSobjectDescribe ] = await Promise.all([
-			this.conn.describeGlobal() as GlobalDescribe,
-			this.conn.tooling.describeGlobal() as GlobalDescribe
-		]);
+			standardSobjectDescribe.sobjects.forEach(sobject => {
+				sobject.isTooling = true;
+			});
 
-		standardSobjectDescribe.sobjects.forEach(sobject => {
-			sobject.isTooling = true;
-		});
+			toolingSobjectDescribe.sobjects.forEach(sobject => {
 
-		toolingSobjectDescribe.sobjects.forEach(sobject => {
+				//A true tooling object is one that exists in the list of tooling sobjects but NOT in the list of standard sobjects.
+				//Some sobjects exist in both lists which in that case, they are considered standard sobjects.
+				const standardSobjectMatch = standardSobjectDescribe.sobjects.find(x => x.name === sobject.name);
+				const isTooling = standardSobjectMatch === undefined;
 
-			//A true tooling object is one that exists in the list of tooling sobjects but NOT in the list of standard sobjects.
-			//Some sobjects exist in both lists which in that case, they are considered standard sobjects.
-			const standardSobjectMatch = standardSobjectDescribe.sobjects.find(x => x.name === sobject.name);
-			const isTooling = standardSobjectMatch === undefined;
+				sobject.isTooling = isTooling;
+			});
 
-			sobject.isTooling = isTooling;
-		});
+			const allSobjects = [...standardSobjectDescribe.sobjects, ...toolingSobjectDescribe.sobjects];
 
-		const allSobjects = [...standardSobjectDescribe.sobjects, ...toolingSobjectDescribe.sobjects];
+			//Cache for 12 hours
+			await this.cache.set(cacheKey, allSobjects, (60 * 60 * 12));
 
-		//Cache for 12 hours
-		await this.cache.set(cacheKey, allSobjects, (60 * 60 * 12));
+			return allSobjects;
 
-		return allSobjects;
+		} catch (error) {
+			this.debug.error(`_globalDescribe() error`, error);
+			if(error.errorCode === 'INVALID_SESSION_ID') throw new UnauthorizedException(error.message);
+			throw error;
+		}
 	}
 }

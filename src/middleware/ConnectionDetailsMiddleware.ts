@@ -8,7 +8,7 @@ export class ConnectionDetailsMiddleware implements NestMiddleware {
 			
 			const connectionDetails = new ConnectionDetails();
 			connectionDetails.instanceUrl = req.headers['instance-url'];
-			connectionDetails.orgId = req.headers['org-id'];
+			connectionDetails.organizationId = req.headers['organization-id'];
 			connectionDetails.sessionId = req.headers['salesforce-session-token'];
 			connectionDetails.userId = req.headers['user-id'];
 			connectionDetails.orgVersion = req.headers['org-version'];
