@@ -22,7 +22,7 @@ export class TraceFlagService extends AbstractSobjectService {
 		this.debug.verbose('fieldsToQuery', fieldsToQuery);
 
 		fieldsToQuery = fieldsToQuery || await this.getSobjectFieldNames();
-		const traceFlagQueryResult = await this.query(fieldsToQuery, `Where TracedEntityId = '${userId}'`);
+		const traceFlagQueryResult = await this.query(fieldsToQuery, `Where TracedEntityId = '${userId}' Or CreatedById = '${userId}'`);
 		const traceFlags = traceFlagQueryResult.records as TraceFlag[];
 
 		const debugLevelIds = traceFlags.map(x => x.debugLevelId);
