@@ -1,7 +1,5 @@
-import { Controller, Get, Post, Headers, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Headers } from '@nestjs/common';
 import { OrgService } from './org-service';
-import { OrgVersion } from '../../models/org-version';
-import { IResponse } from '../../interfaces/IResponse';
 import * as jsonapi from 'jsonapi-serializer';
 
 @Controller('api/org')
