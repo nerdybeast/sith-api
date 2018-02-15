@@ -16,6 +16,10 @@
     "prod": "tsc && node dist/server.js",
     "postinstall": "npm run build"
   },
+  "engines": {
+    "node": "8.9.x",
+    "npm": "5.5.x"
+  },
   "dependencies": {
     "@nestjs/common": "^4.4.0",
     "@nestjs/core": "^4.4.0",
