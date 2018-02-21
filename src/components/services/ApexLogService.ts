@@ -13,8 +13,8 @@ export class ApexLogService extends AbstractSobjectService {
 		return await this._retrieve<ApexLog>(id);
 	}
 
-	async getByUserId(userId: string, fieldsToQuery: string[]) : Promise<ApexLog[]> {
-		const apexLogQueryResult = await this.query(fieldsToQuery, `Where LogUserId = '${userId}' ORDER BY StartTime DESC LIMIT 25`);
+	async getByUserId(userId: string, fieldsToQuery: string[], limit: number = 25) : Promise<ApexLog[]> {
+		const apexLogQueryResult = await this.query(fieldsToQuery, `Where LogUserId = '${userId}' ORDER BY StartTime DESC LIMIT ${limit}`);
 		const apexLogRecords = apexLogQueryResult.records as ApexLog[];
 		return apexLogRecords;
 	}
@@ -40,13 +40,13 @@ export class ApexLogService extends AbstractSobjectService {
 		return apexLogs;
 	}
 
-	async getApexLogs(userId: string, fieldsToQuery: string[]) : Promise<ApexLog[]> {
+	async getApexLogs(userId: string, fieldsToQuery: string[], limit?: number) : Promise<ApexLog[]> {
 		
 		this.debug.verbose('getApexLogs() parameters:');
 		this.debug.verbose('userId', userId);
 		this.debug.verbose('fieldsToQuery', fieldsToQuery);
 		
-		const apexLogRecords = await this.getByUserId(userId, fieldsToQuery);
+		const apexLogRecords = await this.getByUserId(userId, fieldsToQuery, limit);
 		const apexLogs = await this.attachBody(apexLogRecords);
 
 		return apexLogs.filter(log => log.body);
