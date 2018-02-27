@@ -3,20 +3,18 @@ import * as jsforce from 'jsforce';
 import { ConnectionDetails } from '../../models/ConnectionDetails';
 import { Debug } from '../../utilities/debug';
 import { AnonymousApexResult } from '../../models/salesforce-metadata/AnonymousApexResult';
+import { AbstractSobjectService } from './AbstractSobjectService';
+import { SobjectDescribeBase } from '../../models/salesforce-metadata/SobjectDescribeBase';
+import { SobjectDescribe } from '../../models/salesforce-metadata/SobjectDescribe';
 
-export class ToolingService {
+export class ToolingService extends AbstractSobjectService {
 
-	private conn: any;
-	protected debug: Debug;
+	constructor(connectionDetails: ConnectionDetails) {
+		super('Tooling', connectionDetails);
+	}
 
-	constructor(private connectionDetails: ConnectionDetails) {
-		
-		this.conn = new jsforce.Connection({
-			accessToken: connectionDetails.sessionId,
-			instanceUrl: connectionDetails.instanceUrl
-		});
+	public async retrieve(id: string) {
 
-		this.debug = new Debug(`ToolingService`);
 	}
 
 	public async executeAnonymousApex(apex: string) : Promise<AnonymousApexResult> {
@@ -29,6 +27,24 @@ export class ToolingService {
 			return result as AnonymousApexResult;
 		} catch (error) {
 			this.debug.error(`executeAnonymousApex error`, error);
+			throw error;
+		}
+	}
+
+	public async globalDescribe() : Promise<SobjectDescribeBase[]> {
+		try {
+			return await this._globalDescribe(this.connectionDetails.organizationId);
+		} catch (error) {
+			this.debug.error(`globalDescribe() error`, error);
+			throw error;
+		}
+	}
+
+	public async sobjectDescribe(sobjectName: string) : Promise<SobjectDescribe> {
+		try {
+			return await this._describeSobject(sobjectName, this.connectionDetails.organizationId);
+		} catch (error) {
+			this.debug.error(`sobjectDescribe() error`, error);
 			throw error;
 		}
 	}

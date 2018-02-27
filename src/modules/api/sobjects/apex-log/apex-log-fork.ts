@@ -55,7 +55,7 @@ export async function poll(pollingRateInMilliseconds: number) {
 		const apexLogs = await apexLogService.attachBody(apexLogsWithoutBody);
 
 		invokeProcessFn('send', { 
-			apexLogs: apexLogs.filter(log => log.body), 
+			apexLogs: apexLogs.filter(log => log.body),
 			apexLogFieldNames
 		});
 	}

@@ -2,13 +2,10 @@ import { Module, RequestMethod } from '@nestjs/common';
 import { AppController } from './app-controller';
 import { UserModule } from './user/user-module';
 import { OrgModule } from './org/org-module';
-import { ConnectionDetailsMiddleware } from '../middleware/ConnectionDetailsMiddleware';
-import { SobjectsModule } from './api/sobjects-module';
-import { MetadataModule } from './api/metadata/metadata-module';
-import { ToolingModule } from './api/tooling/tooling-module';
+import { ApiModule } from './api/api-module';
 
 @Module({
-	modules: [UserModule, OrgModule, SobjectsModule, MetadataModule, ToolingModule],
+	modules: [UserModule, OrgModule, ApiModule],
 	controllers: [AppController]
 })
 export class ApplicationModule {}

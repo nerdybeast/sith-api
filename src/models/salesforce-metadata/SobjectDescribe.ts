@@ -1,4 +1,4 @@
-import { SobjectDescribeBase } from './SobjectDescribeBase';
+import { SobjectDescribeBase, fieldNames as baseSobjectFieldnames } from './SobjectDescribeBase';
 import { ActionOverride } from './ActionOverride';
 import { ChildRelationship } from './ChildRelationship';
 import { SobjectField } from './SobjectField';
@@ -16,3 +16,16 @@ export class SobjectDescribe extends SobjectDescribeBase {
 	recordTypeInfos: RecordTypeInfo[];
 	searchLayoutable: boolean;
 }
+
+export const fieldNames: string[] = [
+	...baseSobjectFieldnames,
+	'actionOverrides',
+	'childRelationships',
+	'compactLayoutable',
+	'fields',
+	'listviewable',
+	'lookupLayoutable',
+	'namedLayoutInfos',
+	'recordTypeInfos',
+	'searchLayoutable'
+];

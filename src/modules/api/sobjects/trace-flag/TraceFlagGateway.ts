@@ -1,6 +1,6 @@
 import { fork, ChildProcess } from 'child_process';
 import { join } from 'path';
-import { WebSocketGateway, NestGateway, SubscribeMessage, WebSocketServer } from '@nestjs/websockets';
+import { WebSocketGateway, NestGateway, SubscribeMessage, WebSocketServer, OnGatewayInit } from '@nestjs/websockets';
 import { Debug } from '../../../../utilities/debug';
 import { ConnectionDetails } from '../../../../models/ConnectionDetails';
 import { TraceFlagService } from '../../../../components/services/TraceFlagService';
@@ -11,14 +11,10 @@ import { error } from 'util';
 import { IpcMessage } from '../../../../models/IpcMessage';
 import { IpcMessageType } from '../../../../models/enums/ipc-message-type';
 import { TraceFlagIPC } from '../../../../models/ipc/TraceFlagIPC';
-
-class OrgPoller {
-	fork: ChildProcess;
-	connections: ConnectionDetails[];
-}
+import { OrgPoller } from '../../../../models/ipc/OrgPoller';
 
 @WebSocketGateway({ namespace: 'trace-flags' })
-export class TraceFlagGateway implements NestGateway {
+export class TraceFlagGateway implements NestGateway, OnGatewayInit {
 
 	@WebSocketServer() server;
 
@@ -26,13 +22,17 @@ export class TraceFlagGateway implements NestGateway {
 	private socketMap = new Map<string, ConnectionDetails>();
 	private pollingMap = new Map<string, OrgPoller>();
 
+	afterInit(server) {
+		this.debug.info(`trace-flags gateway initialized`);
+	}
+
 	handleConnection(client) {
-		this.debug.verbose(`trace-flags client connected`, client.id);
+		this.debug.info(`trace-flags client connected`, client.id);
 	}
 
 	handleDisconnect(client) {
 		
-		this.debug.verbose(`trace-flags client disconnected`, client.id);
+		this.debug.info(`trace-flags client disconnected`, client.id);
 
 		const connectionDetails = this.socketMap.get(client.id);
 		this.socketMap.delete(client.id);
@@ -84,7 +84,7 @@ export class TraceFlagGateway implements NestGateway {
 
 		//Have each socket for the same user join a "room" so that we can emit messages to this single user.
 		//If the user has multiple browser tabs open for this app, that would be multiple sockets for the same user.
-		socket.join(connectionDetails.userId);
+		//socket.join(connectionDetails.userId);
 
 		this.addConnection(socket.id, connectionDetails);
 	}

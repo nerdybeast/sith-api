@@ -1,4 +1,5 @@
 import { PicklistValue } from './PicklistValue';
+import { FilteredLookupInfo } from './FilteredLookupInfo';
 
 export class SobjectField {
 	aggregatable: boolean;
@@ -27,7 +28,7 @@ export class SobjectField {
 	externalId: boolean;
 	extraTypeInfo: any;
 	filterable: boolean;
-	filteredLookupInfo: any;
+	filteredLookupInfo: FilteredLookupInfo;
 	groupable: boolean;
 	highScaleNumber: boolean;
 	htmlFormatted: boolean;

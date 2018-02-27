@@ -21,7 +21,7 @@ export abstract class AbstractSobjectService {
 	protected sobjectName: string;
 	protected connectionDetails: ConnectionDetails;
 	protected cache: ICache;
-	private conn: any;
+	protected conn: any;
 	protected debug: Debug;
 
 	constructor(sobjectName: string, connectionDetails: ConnectionDetails) {
@@ -60,9 +60,9 @@ export abstract class AbstractSobjectService {
 
 	public async query(fieldNames: string[] | string, whereClause: string) : Promise<QueryResult> {
 		if(fieldNames === '*') fieldNames = await this.getSobjectFieldNames();
-		const sobjectMetadata = await this._getSobjectMetadata(this.sobjectName);
+		const sobjectBaseMetadata = await this._describeSobjectBase(this.sobjectName);
 		const soql = `SELECT ${fieldNames} FROM ${this.sobjectName} ${whereClause}`;
-		return await this._query(soql, sobjectMetadata.isTooling);
+		return await this._query(soql, sobjectBaseMetadata.isTooling);
 	}
 
 	public async create(data: any) : Promise<CrudResult> {
@@ -105,10 +105,10 @@ export abstract class AbstractSobjectService {
 
 		try {
 			
-			const sobjectMetadata = await this._getSobjectMetadata(this.sobjectName);
+			const sobjectBaseMetadata = await this._describeSobjectBase(this.sobjectName);
 			let result: any = null;
 
-			if(sobjectMetadata.isTooling) {
+			if(sobjectBaseMetadata.isTooling) {
 				result = await this.conn.tooling.sobject(this.sobjectName)[action](data);
 			} else {
 				result = await this.conn.sobject(this.sobjectName)[action](data);
@@ -137,7 +137,7 @@ export abstract class AbstractSobjectService {
 		try {
 
 			let queryResult = await (isToolingQuery ? this.conn.tooling.query(soql) : this.conn.query(soql));
-			this.debug.info(`Raw query result`, queryResult);
+			this.debug.verbose(`Raw query result`, queryResult);
 
 			//1. To help be json api compliant
 			//2. Some data from Salesforce comes back as camelCase, other is PascalCased, don't want to have to
@@ -153,12 +153,12 @@ export abstract class AbstractSobjectService {
 		}
 	}
 
-	private async _getSobjectMetadata(sobjectName: string) : Promise<SobjectDescribeBase> {
+	private async _describeSobjectBase(sobjectName: string) : Promise<SobjectDescribeBase> {
 		const allSobjects = await this._globalDescribe(this.connectionDetails.organizationId);
 		return allSobjects.find(sobject => sobject.name === sobjectName);
 	}
 
-	private async _describeSobject(sobjectName: string, organizationId: string) : Promise<SobjectDescribe> {
+	protected async _describeSobject(sobjectName: string, organizationId: string) : Promise<SobjectDescribe> {
 
 		try {
 			
@@ -175,7 +175,7 @@ export abstract class AbstractSobjectService {
 		}
 	}
 
-	private async _globalDescribe(organizationId: string) : Promise<SobjectDescribeBase[]> {
+	protected async _globalDescribe(organizationId: string) : Promise<SobjectDescribeBase[]> {
 		try {
 		
 			const cacheKey = `GLOBAL_SOBJECT_DESCRIBE_BY_ORG:${organizationId}`;
@@ -188,19 +188,8 @@ export abstract class AbstractSobjectService {
 				this.conn.tooling.describeGlobal() as GlobalDescribe
 			]);
 
-			standardSobjectDescribe.sobjects.forEach(sobject => {
-				sobject.isTooling = true;
-			});
-
-			toolingSobjectDescribe.sobjects.forEach(sobject => {
-
-				//A true tooling object is one that exists in the list of tooling sobjects but NOT in the list of standard sobjects.
-				//Some sobjects exist in both lists which in that case, they are considered standard sobjects.
-				const standardSobjectMatch = standardSobjectDescribe.sobjects.find(x => x.name === sobject.name);
-				const isTooling = standardSobjectMatch === undefined;
-
-				sobject.isTooling = isTooling;
-			});
+			standardSobjectDescribe.sobjects.forEach(sobject => sobject.isTooling = false);
+			toolingSobjectDescribe.sobjects.forEach(sobject => sobject.isTooling = true);
 
 			const allSobjects = [...standardSobjectDescribe.sobjects, ...toolingSobjectDescribe.sobjects];
 
