@@ -7,7 +7,7 @@ import { UserPoller } from '../../../../models/ipc/UserPoller';
 import { TraceFlagIPC } from '../../../../models/ipc/TraceFlagIPC';
 import * as jsonapi from 'jsonapi-serializer';
 
-@WebSocketGateway({ namespace: 'apex-logs' })
+@WebSocketGateway({ namespace: 'APEX_LOGS' })
 export class ApexLogGateway implements NestGateway {
 
 	@WebSocketServer() server;
