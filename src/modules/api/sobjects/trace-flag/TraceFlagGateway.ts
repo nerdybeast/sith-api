@@ -17,7 +17,7 @@ class OrgPoller {
 	connections: ConnectionDetails[];
 }
 
-@WebSocketGateway({ namespace: 'trace-flags' })
+@WebSocketGateway({ namespace: 'TRACE_FLAGS' })
 export class TraceFlagGateway implements NestGateway {
 
 	@WebSocketServer() server;
@@ -79,12 +79,12 @@ export class TraceFlagGateway implements NestGateway {
 		}
 	}
 
-	@SubscribeMessage('handshake')
-	async handshake(socket, connectionDetails: ConnectionDetails) {
+	@SubscribeMessage('start')
+	async start(socket, connectionDetails: ConnectionDetails) {
 
 		//Have each socket for the same user join a "room" so that we can emit messages to this single user.
 		//If the user has multiple browser tabs open for this app, that would be multiple sockets for the same user.
-		socket.join(connectionDetails.userId);
+		//socket.join(connectionDetails.userId);
 
 		this.addConnection(socket.id, connectionDetails);
 	}
