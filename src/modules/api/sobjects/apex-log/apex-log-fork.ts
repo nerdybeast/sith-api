@@ -5,6 +5,7 @@ import { TraceFlagIPC } from '../../../../models/ipc/TraceFlagIPC';
 import { DebugLevelService } from '../../../../components/services/DebugLevelService';
 import { ApexLogService } from '../../../../components/services/ApexLogService';
 import { ApexLog } from '../../../../models/sobjects/ApexLog';
+import { ApexLogsUpdateIPC } from '../../../../models/ipc/ApexLogsUpdateIPC';
 
 const debug = new Debug('trace-flag-fork');
 let connections: ConnectionDetails[] = [];
@@ -54,10 +55,9 @@ export async function poll(pollingRateInMilliseconds: number) {
 		existingApexLogs = apexLogsWithoutBody;
 		const apexLogs = await apexLogService.attachBody(apexLogsWithoutBody);
 
-		invokeProcessFn('send', { 
-			apexLogs: apexLogs.filter(log => log.body), 
-			apexLogFieldNames
-		});
+		const ipc = new ApexLogsUpdateIPC(connection.userId, apexLogs.filter(log => log.body), apexLogFieldNames);
+
+		invokeProcessFn('send', ipc);
 	}
 
 	connection = undefined;

@@ -11,6 +11,7 @@ import { error } from 'util';
 import { IpcMessage } from '../../../../models/IpcMessage';
 import { IpcMessageType } from '../../../../models/enums/ipc-message-type';
 import { TraceFlagIPC } from '../../../../models/ipc/TraceFlagIPC';
+import { TraceFlagsUpdateIPC } from '../../../../models/ipc/TraceFlagsUpdateIPC';
 
 class OrgPoller {
 	fork: ChildProcess;
@@ -84,7 +85,8 @@ export class TraceFlagGateway implements NestGateway {
 
 		//Have each socket for the same user join a "room" so that we can emit messages to this single user.
 		//If the user has multiple browser tabs open for this app, that would be multiple sockets for the same user.
-		//socket.join(connectionDetails.userId);
+		//NOTE: Sockets automatically leave rooms when they disconnect.
+		socket.join(connectionDetails.userId);
 
 		this.addConnection(socket.id, connectionDetails);
 	}
@@ -124,7 +126,7 @@ export class TraceFlagGateway implements NestGateway {
 		childProcess.on('disconnect', (code: number, signal: string) => this.debug.warning(`child process ${childProcess.pid} disconnected, code: "${code}", signal: "${signal}"`));
 		childProcess.on('error', (error: Error) => this.debug.warning(`child process ${childProcess.pid} threw an error`, error));
 		childProcess.on('exit', (code: number, signal: string) => this.debug.info(`child process ${childProcess.pid} exit, code: "${code}", signal: "${signal}"`));
-		childProcess.on('message', (message: any) => this.onChildProcessMessage(message));
+		childProcess.on('message', (message: TraceFlagsUpdateIPC) => this.onChildProcessMessage(message));
 		
 		orgPoller.fork = childProcess;
 
@@ -135,10 +137,12 @@ export class TraceFlagGateway implements NestGateway {
 		orgPoller.fork.send(ipc);
 	}
 
-	async onChildProcessMessage(message: any) {
-		const { traceFlags, traceFlagFieldNames, debugLevelFieldNames } = message;
-		const data = TraceFlagService.serializeToJsonApi(traceFlags, traceFlagFieldNames, debugLevelFieldNames);
-		this.server.emit('trace-flags-update', data);
+	async onChildProcessMessage(ipc: TraceFlagsUpdateIPC) {
+
+		ipc.traceFlagsByUser.forEach(user => {
+			const data = TraceFlagService.serializeToJsonApi(user.traceFlags, ipc.traceFlagFieldNames, ipc.debugLevelFieldNames);
+			this.server.to(user.userId).emit('trace-flags-update', data);
+		});
 	}
 
 	private _isLastSingleUserConnection(connectionsMap: Map<string, ConnectionDetails>, userId: string) : boolean {
