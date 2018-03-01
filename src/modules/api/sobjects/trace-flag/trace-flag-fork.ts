@@ -7,6 +7,8 @@ import { ConnectionDetails } from '../../../../models/ConnectionDetails';
 import * as isEqual from 'lodash.isequal';
 import { TraceFlagIPC } from '../../../../models/ipc/TraceFlagIPC';
 import { DebugLevelService } from '../../../../components/services/DebugLevelService';
+import { UserTraceFlags } from '../../../../models/ipc/UserTraceFlags';
+import { TraceFlagsUpdateIPC } from '../../../../models/ipc/TraceFlagsUpdateIPC';
 
 const debug = new Debug('trace-flag-fork');
 let connections: ConnectionDetails[] = [];
@@ -65,7 +67,17 @@ export async function poll(pollingRateInMilliseconds: number) {
 		
 		existingTraceFlags = traceFlags;
 
-		invokeProcessFn('send', { traceFlags, traceFlagFieldNames, debugLevelFieldNames });
+		const usersList = connections.map(x => {
+			
+			const usersTraceFlags = traceFlags.filter(tf => tf.tracedEntityId === x.userId);
+
+			if(usersTraceFlags.length > 0) {
+				return new UserTraceFlags(x.userId, usersTraceFlags);
+			}
+		});
+
+		//invokeProcessFn('send', { traceFlags, traceFlagFieldNames, debugLevelFieldNames });
+		invokeProcessFn('send', new TraceFlagsUpdateIPC(usersList, traceFlagFieldNames, debugLevelFieldNames));
 	}
 
 	traceFlagService = undefined;
@@ -81,16 +93,3 @@ export async function poll(pollingRateInMilliseconds: number) {
 
 	setTimeout(() => poll(pollingRateInMilliseconds), pollingRateInMilliseconds);
 }
-
-// const x = new ConnectionDetails();
-// x.instanceUrl = 'https://vivint--DevGrnAcre.cs22.my.salesforce.com';
-// x.organizationId = '00D17000000BLCaEAO';
-// x.orgVersion = 'v40.0';
-// x.sessionId = '00D17000000BLCa!AQoAQKE_YdYSjTTafqoR1M2OzUvDQzdOY4BRTwmjrrvF4mcs6M1vJJYn2CVAKBIbmt0yN35SYPJIV9ngXd2Zc9Y9VSgrGxX3';
-// x.userId = '005G0000003pal8IAA';
-
-// const y = new TraceFlagIPC();
-// y.connections = [x];
-// y.pollingRateInMilliseconds = 10;
-
-// onMessage(y);
