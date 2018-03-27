@@ -9,6 +9,7 @@ import { TraceFlagIPC } from '../../../../models/ipc/TraceFlagIPC';
 import { DebugLevelService } from '../../../../components/services/DebugLevelService';
 import { UserTraceFlags } from '../../../../models/ipc/UserTraceFlags';
 import { TraceFlagsUpdateIPC } from '../../../../models/ipc/TraceFlagsUpdateIPC';
+import { Connection } from '../../../../models/Connection';
 
 const debug = new Debug('trace-flag-fork');
 let connections: ConnectionDetails[] = [];
@@ -42,8 +43,10 @@ export async function poll(pollingRateInMilliseconds: number) {
 		return;
 	}
 
-	let traceFlagService = new TraceFlagService(connections[0]);
-	let debugLevelService = new DebugLevelService(connections[0]);
+	let connection = connections[0];
+
+	let traceFlagService = new TraceFlagService(new Connection(connection));
+	let debugLevelService = new DebugLevelService(new Connection(connection));
 
 	let [traceFlagFieldNames, debugLevelFieldNames] = await Promise.all([
 		traceFlagService.getSobjectFieldNames(),
@@ -80,6 +83,7 @@ export async function poll(pollingRateInMilliseconds: number) {
 		invokeProcessFn('send', new TraceFlagsUpdateIPC(usersList, traceFlagFieldNames, debugLevelFieldNames));
 	}
 
+	connection = undefined;
 	traceFlagService = undefined;
 	debugLevelService = undefined;
 	traceFlagFieldNames = undefined;

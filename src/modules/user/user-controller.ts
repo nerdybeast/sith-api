@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Param, Body } from '@nestjs/common';
 import { UserService } from './user-service';
-import { AuthService } from '../../components/services/auth-service';
+import { AuthService } from '../../components/services/AuthService';
 import jwt = require('jsonwebtoken');
 
 @Controller('api/user')

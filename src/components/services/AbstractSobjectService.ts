@@ -1,4 +1,4 @@
-import { UnauthorizedException } from '@nestjs/common';
+import { UnauthorizedException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { CacheFactory } from '../factories/cache-factory';
 import { ICache } from '../../interfaces/ICache';
 import { ConnectionDetails } from '../../models/ConnectionDetails';
@@ -11,10 +11,12 @@ import { SobjectDescribeBase } from '../../models/salesforce-metadata/SobjectDes
 import { CrudAction } from '../../models/enums/crud-action';
 import * as camelCase from 'lodash.camelcase';
 import * as got from 'got';
-import * as jsforce from 'jsforce';
+import { Connection } from '../../models/Connection';
 
 //This package is not es6 module friendly, have to import the commonjs way.
 import camelCaseKeys = require('camelcase-keys');
+import { JsforceError } from '../../models/JsforceError';
+import { ErrorCode } from '../../models/enums/error-code';
 
 export abstract class AbstractSobjectService {
 
@@ -24,16 +26,13 @@ export abstract class AbstractSobjectService {
 	private conn: any;
 	protected debug: Debug;
 
-	constructor(sobjectName: string, connectionDetails: ConnectionDetails) {
+	constructor(sobjectName: string, connection: Connection) {
 
 		this.sobjectName = sobjectName;
-		this.connectionDetails = connectionDetails;
+		this.connectionDetails = connection.details;
 		this.cache = CacheFactory.getCache();
 
-		this.conn = new jsforce.Connection({
-			accessToken: connectionDetails.sessionId,
-			instanceUrl: connectionDetails.instanceUrl
-		});
+		this.conn = connection.jsforce;
 
 		this.debug = new Debug(`${sobjectName}Service`);
 	}
@@ -58,8 +57,11 @@ export abstract class AbstractSobjectService {
 
 	public abstract async retrieve(id: string);
 
-	public async query(fieldNames: string[] | string, whereClause: string) : Promise<QueryResult> {
+	public async query(fieldNames: string[] | string, whereClause?: string) : Promise<QueryResult> {
+		
 		if(fieldNames === '*') fieldNames = await this.getSobjectFieldNames();
+		whereClause = whereClause || '';
+
 		const sobjectMetadata = await this._getSobjectMetadata(this.sobjectName);
 		const soql = `SELECT ${fieldNames} FROM ${this.sobjectName} ${whereClause}`;
 		return await this._query(soql, sobjectMetadata.isTooling);
@@ -119,13 +121,16 @@ export abstract class AbstractSobjectService {
 			return result as T;
 
 		} catch (error) {
+
 			this.debug.error(`${action} failed for ${this.sobjectName}`);
 			this.debug.error(`data`, data);
 			this.debug.error(`error`, error);
-			if(error.errorCode === 'INVALID_SESSION_ID') throw new UnauthorizedException(error.message);
-			throw error;
-		}
 
+			const ex: JsforceError = error;
+
+			if(ex.errorCode === ErrorCode.INVALID_SESSION_ID) throw new UnauthorizedException(ex.message);
+			throw new BadRequestException(ex.message);
+		}
 	}
 
 	private async _query(soql: string, isToolingQuery: boolean = false) : Promise<QueryResult> {
@@ -147,9 +152,13 @@ export abstract class AbstractSobjectService {
 			return queryResult as QueryResult;
 
 		} catch (error) {
+
 			this.debug.error(`_query() error`, error);
-			if(error.errorCode === 'INVALID_SESSION_ID') throw new UnauthorizedException(error.message);
-			throw error;
+
+			const ex: JsforceError = error;
+
+			if(ex.errorCode === ErrorCode.INVALID_SESSION_ID) throw new UnauthorizedException(ex.message);
+			throw new BadRequestException(ex.message);
 		}
 	}
 
@@ -169,15 +178,21 @@ export abstract class AbstractSobjectService {
 			return sobjectDescription as SobjectDescribe;
 
 		} catch (error) {
+
 			this.debug.error(`_describeSobject() error`, error);
-			if(error.errorCode === 'INVALID_SESSION_ID') throw new UnauthorizedException(error.message);
-			throw error;
+
+			const ex: JsforceError = error;
+
+			if(ex.errorCode === ErrorCode.INVALID_SESSION_ID) throw new UnauthorizedException(ex.message);
+			throw new BadRequestException(ex.message);
 		}
 	}
 
 	private async _globalDescribe(organizationId: string) : Promise<SobjectDescribeBase[]> {
 		try {
 		
+			this.debug.verbose(`_globalDescribe() param: organizationId`, organizationId);
+
 			const cacheKey = `GLOBAL_SOBJECT_DESCRIBE_BY_ORG:${organizationId}`;
 			const cachedValue = await this.cache.get(cacheKey) as any[];
 
@@ -210,9 +225,14 @@ export abstract class AbstractSobjectService {
 			return allSobjects;
 
 		} catch (error) {
+
 			this.debug.error(`_globalDescribe() error`, error);
-			if(error.errorCode === 'INVALID_SESSION_ID') throw new UnauthorizedException(error.message);
-			throw error;
+
+			const ex: JsforceError = error;
+
+			if(ex.errorCode === ErrorCode.INVALID_SESSION_ID) throw new UnauthorizedException(ex.message);
+			if(ex.errorCode === ErrorCode.REQUEST_LIMIT_EXCEEDED) throw new ForbiddenException(ex.message);
+			throw new BadRequestException(ex.message);
 		}
 	}
 }

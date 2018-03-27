@@ -1,11 +1,11 @@
 import { AbstractSobjectService } from './AbstractSobjectService';
-import { ConnectionDetails } from '../../models/ConnectionDetails';
 import { DebugLevel } from '../../models/sobjects/DebugLevel';
+import { Connection } from '../../models/Connection';
 
 export class DebugLevelService extends AbstractSobjectService {
 
-	constructor(connectionDetails: ConnectionDetails) {
-		super('DebugLevel', connectionDetails);
+	constructor(connection: Connection) {
+		super('DebugLevel', connection);
 	}
 
 	public async retrieve(id: string) : Promise<DebugLevel> {

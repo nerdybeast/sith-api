@@ -1,14 +1,15 @@
 import { AbstractSobjectService } from './AbstractSobjectService';
-import { ConnectionDetails } from '../../models/ConnectionDetails';
 import { TraceFlag } from '../../models/sobjects/TraceFlag';
 import { CrudResult } from '../../models/CrudResult';
 import { DebugLevelService } from './DebugLevelService';
 import * as jsonapi from 'jsonapi-serializer';
+import { Connection } from '../../models/Connection';
+import { ConnectionDetails } from '../../models/ConnectionDetails';
 
 export class TraceFlagService extends AbstractSobjectService {
 
-	constructor(connectionDetails: ConnectionDetails) {
-		super('TraceFlag', connectionDetails);
+	constructor(private connection: Connection) {
+		super('TraceFlag', connection);
 	}
 
 	public async retrieve(id: string) : Promise<TraceFlag> {
@@ -28,7 +29,7 @@ export class TraceFlagService extends AbstractSobjectService {
 		const debugLevelIds = traceFlags.map(x => x.debugLevelId);
 		debugLevelFieldsToQuery = debugLevelFieldsToQuery || await this.getSobjectFieldNames('DebugLevel');
 		
-		const debugLevelService = new DebugLevelService(this.connectionDetails);
+		const debugLevelService = new DebugLevelService(this.connection);
 		const debugLevels = await debugLevelService.getDebugLevels(debugLevelIds, debugLevelFieldsToQuery);
 
 		traceFlags.forEach(tf => {
