@@ -6,6 +6,7 @@ import { DebugLevelService } from '../../../../components/services/DebugLevelSer
 import { ApexLogService } from '../../../../components/services/ApexLogService';
 import { ApexLog } from '../../../../models/sobjects/ApexLog';
 import { ApexLogsUpdateIPC } from '../../../../models/ipc/ApexLogsUpdateIPC';
+import { Connection } from '../../../../models/Connection';
 
 const debug = new Debug('trace-flag-fork');
 let connections: ConnectionDetails[] = [];
@@ -40,7 +41,7 @@ export async function poll(pollingRateInMilliseconds: number) {
 	}
 
 	let connection = connections[0];
-	let apexLogService = new ApexLogService(connection);
+	let apexLogService = new ApexLogService(new Connection(connection));
 
 	let [apexLogFieldNames] = await Promise.all([
 		apexLogService.getSobjectFieldNames()

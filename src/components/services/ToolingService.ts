@@ -1,21 +1,16 @@
 import * as got from 'got';
 import * as jsforce from 'jsforce';
-import { ConnectionDetails } from '../../models/ConnectionDetails';
 import { Debug } from '../../utilities/debug';
 import { AnonymousApexResult } from '../../models/salesforce-metadata/AnonymousApexResult';
+import { Connection } from '../../models/Connection';
 
 export class ToolingService {
 
 	private conn: any;
 	protected debug: Debug;
 
-	constructor(private connectionDetails: ConnectionDetails) {
-		
-		this.conn = new jsforce.Connection({
-			accessToken: connectionDetails.sessionId,
-			instanceUrl: connectionDetails.instanceUrl
-		});
-
+	constructor(private connection: Connection) {
+		this.conn = connection.jsforce;
 		this.debug = new Debug(`ToolingService`);
 	}
 
