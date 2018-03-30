@@ -1,11 +1,11 @@
-import { Connection } from '../src/models/Connection';
-import { ConnectionDetails } from '../src/models/ConnectionDetails';
-import { ApexLogService } from '../src/components/services/ApexLogService';
-import { Sobject } from '../src/models/sobjects/Sobject';
-import { QueryResult } from '../src/models/query-result';
-import { JsforceError } from '../src/models/JsforceError';
-import { generateMockConnection, generateGlobalDescribe } from './helpers';
-import { ApexLog } from '../src/models/sobjects/ApexLog';
+import { Connection } from '../../models/Connection';
+import { ConnectionDetails } from '../../models/ConnectionDetails';
+import { ApexLogService } from './ApexLogService';
+import { Sobject } from '../../models/sobjects/Sobject';
+import { QueryResult } from '../../models/query-result';
+import { JsforceError } from '../../models/JsforceError';
+import { generateMockConnection, generateGlobalDescribe } from '../../../test-helpers';
+import { ApexLog } from '../../models/sobjects/ApexLog';
 
 describe('ApexLogService', () => {
 
@@ -13,7 +13,7 @@ describe('ApexLogService', () => {
 
 	beforeAll(() => {
 
-		const globalDescribe = generateGlobalDescribe('ApexLog');
+		generateGlobalDescribe('ApexLog');
 
 		const connection = generateMockConnection();
 		apexLogService = new ApexLogService(connection);
@@ -22,6 +22,40 @@ describe('ApexLogService', () => {
 	afterEach(() => {
 		require('jsforce').__reset();
 		require('got').__reset();
+	});
+
+	test('retrieve - single apex log', async () => {
+
+		// debugger;
+
+		const mockApexLog = new ApexLog();
+		mockApexLog.id = '12345';
+		mockApexLog.application = '/services/apexrest/abc';
+
+		require('jsforce').__setRetrieveResult(mockApexLog);
+
+		const apexLog = await apexLogService.retrieve(mockApexLog.id);
+
+		expect(apexLog.id).toBe(mockApexLog.id);
+	});
+
+	test('retrieve - multiple apex logs', async () => {
+
+		// debugger;
+
+		const mockApexLog1 = new ApexLog();
+		mockApexLog1.id = '12345';
+		mockApexLog1.application = '/services/apexrest/abc';
+
+		const mockApexLog2 = new ApexLog();
+		mockApexLog2.id = '678910';
+		mockApexLog2.application = '/services/apexrest/abc';
+
+		require('jsforce').__setRetrieveResult([mockApexLog1, mockApexLog2]);
+
+		const apexLogs = await apexLogService.retrieve([mockApexLog1.id, mockApexLog2.id]);
+
+		expect(apexLogs).toHaveLength(2);
 	});
 
 	test('getByUserId', async () => {
@@ -62,6 +96,8 @@ describe('ApexLogService', () => {
 	});
 
 	test('getDebugLog - error is handled', async () => {
+
+		// debugger;
 
 		const mockError = new Error('Some Error');
 		require('got').__setResponse(undefined, mockError);

@@ -12,8 +12,11 @@ export class TraceFlagService extends AbstractSobjectService {
 		super('TraceFlag', connection);
 	}
 
-	public async retrieve(id: string) : Promise<TraceFlag> {
-		return await this._retrieve<TraceFlag>(id);
+	public async retrieve(ids: string) : Promise<TraceFlag>;
+	public async retrieve(ids: string[]) : Promise<TraceFlag[]>;
+	public async retrieve(ids: any) : Promise<any> {
+		if(Array.isArray(ids)) return await super.retrieve<TraceFlag[]>(ids);
+		return await super.retrieve<TraceFlag>(ids);
 	}
 
 	public async getTraceFlags(userId: string, fieldsToQuery?: string[], debugLevelFieldsToQuery?: string[]) : Promise<TraceFlag[]> {
@@ -39,32 +42,33 @@ export class TraceFlagService extends AbstractSobjectService {
 		return traceFlags;
 	}
 
-	public async create(traceFlag: TraceFlag) : Promise<CrudResult> {
+	public async create(traceFlags: TraceFlag) : Promise<CrudResult>;
+	public async create(traceFlags: TraceFlag[]) : Promise<CrudResult[]>;
+	public async create(traceFlags: any) : Promise<any> {
 
-		const transformedTraceFlag: any = {
-			StartDate: traceFlag.startDate,
-			ExpirationDate: traceFlag.expirationDate,
-			DebugLevelId: traceFlag.debugLevelId,
-			TracedEntityId: traceFlag.tracedEntityId,
-			LogType: traceFlag.logType
-		};
+		if(Array.isArray(traceFlags)) {
+			traceFlags = traceFlags.map(tf => this.transformForCreate(tf));
+		} else {
+			traceFlags = this.transformForCreate(traceFlags);
+		}
 
-		return await this._create(transformedTraceFlag);
+		return await super.create(traceFlags);
 	}
 
-	public async update(traceFlag: TraceFlag) : Promise<CrudResult> {
+	public async update(traceFlags: TraceFlag) : Promise<CrudResult>;
+	public async update(traceFlags: TraceFlag[]) : Promise<CrudResult[]>;
+	public async update(traceFlags: any) : Promise<any> {
 
 		this.debug.verbose('updateTraceFlag() parameters:');
-		this.debug.verbose('traceFlag', traceFlag);
-		
-		const transformedTraceFlag: any = {
-			Id: traceFlag.id,
-			StartDate: traceFlag.startDate,
-			ExpirationDate: traceFlag.expirationDate,
-			DebugLevelId: traceFlag.debugLevelId
-		};
+		this.debug.verbose('traceFlags', traceFlags);
 
-		return await this._update(transformedTraceFlag);
+		if(Array.isArray(traceFlags)) {
+			traceFlags = traceFlags.map(tf => this.transformForUpdate(tf));
+		} else {
+			traceFlags = this.transformForUpdate(traceFlags);
+		}
+
+		return await super.update(traceFlags);
 	}
 
 	public static serializeToJsonApi(traceFlags: TraceFlag[], traceFlagFieldNames: string[], debugLevelFieldNames: string[]) {
@@ -85,5 +89,30 @@ export class TraceFlagService extends AbstractSobjectService {
 		}).serialize(traceFlags);
 
 		return data;
+	}
+
+	private transformForCreate(traceFlag: TraceFlag) : any {
+
+		const transformedTraceFlag: any = {
+			StartDate: traceFlag.startDate,
+			ExpirationDate: traceFlag.expirationDate,
+			DebugLevelId: traceFlag.debugLevelId,
+			TracedEntityId: traceFlag.tracedEntityId,
+			LogType: traceFlag.logType
+		};
+
+		return transformedTraceFlag;
+	}
+
+	private transformForUpdate(traceFlag: TraceFlag) : any {
+
+		const transformedTraceFlag: any = {
+			Id: traceFlag.id,
+			StartDate: traceFlag.startDate,
+			ExpirationDate: traceFlag.expirationDate,
+			DebugLevelId: traceFlag.debugLevelId
+		};
+
+		return transformedTraceFlag;
 	}
 }

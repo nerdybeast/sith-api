@@ -52,15 +52,17 @@
     "@types/camelcase-keys": "^4.0.0",
     "@types/cors": "^2.8.3",
     "@types/debug": "0.0.30",
-    "@types/express": "^4.11.0",
+    "@types/express": "^4.11.1",
     "@types/got": "^7.1.5",
     "@types/jest": "^22.1.4",
     "@types/jsonwebtoken": "^7.2.5",
     "@types/morgan": "^1.7.35",
     "@types/redis": "^2.8.3",
+    "@types/supertest": "^2.0.4",
     "dotenv": "^5.0.0",
     "jest": "^22.4.2",
     "nodemon": "^1.12.1",
+    "supertest": "^3.0.0",
     "ts-jest": "^22.4.0",
     "ts-node": "^4.1.0"
   },
@@ -68,7 +70,11 @@
     "transform": {
       "^.+\\.tsx?$": "ts-jest"
     },
-    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
+    "testRegex": "src/.*(test|spec)\\.(jsx?|tsx?)$",
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/dist/"
+    ],
     "moduleFileExtensions": [
       "ts",
       "tsx",

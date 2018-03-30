@@ -1,12 +1,12 @@
-import { Connection } from '../src/models/Connection';
-import { ConnectionDetails } from '../src/models/ConnectionDetails';
-import { AbstractSobjectService } from '../src/components/services/AbstractSobjectService';
-import { Sobject } from '../src/models/sobjects/Sobject';
-import { QueryResult } from '../src/models/query-result';
-import { JsforceError } from '../src/models/JsforceError';
-import { generateMockConnection, generateGlobalDescribe } from './helpers';
-import { CrudResult } from '../src/models/CrudResult';
-import { ErrorCode } from '../src/models/enums/error-code';
+import { Connection } from '../../models/Connection';
+import { ConnectionDetails } from '../../models/ConnectionDetails';
+import { AbstractSobjectService } from './AbstractSobjectService';
+import { Sobject } from '../../models/sobjects/Sobject';
+import { QueryResult } from '../../models/query-result';
+import { JsforceError } from '../../models/JsforceError';
+import { generateMockConnection, generateGlobalDescribe } from '../../../test-helpers';
+import { CrudResult } from '../../models/CrudResult';
+import { ErrorCode } from '../../models/enums/error-code';
 
 describe('AbstractSobjectService', () => {
 
@@ -21,7 +21,6 @@ describe('AbstractSobjectService', () => {
 			constructor() {
 				super('MockSobject', connection);
 			}
-			retrieve(){}
 		}
 	
 		mockSobjectService = new MockSobjectService();
@@ -104,6 +103,62 @@ describe('AbstractSobjectService', () => {
 
 		try {
 			await mockSobjectService.create({});
+		} catch(error) {
+			expect(error.response.statusCode).toBe(400);
+		}
+	});
+
+	test('update - success', async () => {
+
+		const mockCrudResult = new CrudResult();
+		mockCrudResult.success = true;
+		mockCrudResult.id = '12345';
+		mockCrudResult.errors = [];
+
+		require('jsforce').__setUpdateResult(mockCrudResult);
+
+		const crudResult = await mockSobjectService.update({});
+		expect(crudResult.success).toBe(true);
+	});
+
+	test('update - catch error', async () => {
+
+		const mockErrorResult = new JsforceError();
+		mockErrorResult.errorCode = 'SOME_SF_ERROR';
+		mockErrorResult.message = 'Hey there was an error :/';
+
+		require('jsforce').__setUpdateResult(undefined, mockErrorResult);
+
+		try {
+			await mockSobjectService.update({});
+		} catch(error) {
+			expect(error.response.statusCode).toBe(400);
+		}
+	});
+
+	test('delete - success', async () => {
+
+		const mockCrudResult = new CrudResult();
+		mockCrudResult.success = true;
+		mockCrudResult.id = '12345';
+		mockCrudResult.errors = [];
+
+		require('jsforce').__setDeleteResult(mockCrudResult);
+
+		const crudResult = await mockSobjectService.delete('');
+		expect(crudResult.success).toBe(true);
+	});
+
+	test('delete - catch error', async () => {
+
+		const mockErrorResult = new JsforceError();
+		mockErrorResult.errorCode = 'SOME_SF_ERROR';
+		mockErrorResult.message = 'Hey there was an error :/';
+
+		require('jsforce').__setDeleteResult(undefined, mockErrorResult);
+
+		try {
+			await mockSobjectService.delete('');
 		} catch(error) {
 			expect(error.response.statusCode).toBe(400);
 		}

@@ -15,6 +15,10 @@ let retrieveResult: any;
 let retrieveError: any;
 let createCrudResult: CrudResult;
 let createErrorResult: JsforceError;
+let updateCrudResult: CrudResult;
+let updateErrorResult: JsforceError;
+let deleteCrudResult: CrudResult;
+let deleteErrorResult: JsforceError;
 
 let sobject = new Sobject();
 sobject.id = '1q2w3e4r5t6y7u8i9o';
@@ -54,10 +58,22 @@ jsforce.__setCreateResult = function(mockCreateResult?: CrudResult, error?: Jsfo
 	createErrorResult = error;
 }
 
+jsforce.__setUpdateResult = function(mockUpdateResult?: CrudResult, error?: JsforceError) {
+	updateCrudResult = mockUpdateResult;
+	updateErrorResult = error;
+}
+
+jsforce.__setDeleteResult = function(mockDeleteResult?: CrudResult, error?: JsforceError) {
+	deleteCrudResult = mockDeleteResult;
+	deleteErrorResult = error;
+}
+
 jsforce.__reset = function() {
 	this.__setQueryResult(generateDefaultQueryResult([sobject]));
 	this.__setCreateResult(undefined, undefined);
 	this.__setRetrieveResult(undefined, undefined);
+	this.__setUpdateResult(undefined, undefined);
+	this.__setDeleteResult(undefined, undefined);
 }
 
 let conn = {
@@ -84,6 +100,14 @@ let conn = {
 			create() {
 				if(createErrorResult) return Promise.reject(createErrorResult);
 				return Promise.resolve(createCrudResult);
+			},
+			update() {
+				if(updateErrorResult) return Promise.reject(updateErrorResult);
+				return Promise.resolve(updateCrudResult);
+			},
+			delete() {
+				if(deleteErrorResult) return Promise.reject(deleteErrorResult);
+				return Promise.resolve(deleteCrudResult);
 			}
 		}
 	},
@@ -96,6 +120,32 @@ let conn = {
 
 		describe() {
 			return Promise.resolve(sobjectDescribe);
+		},
+
+		query() {
+			if(queryError) return Promise.reject(queryError);
+			return Promise.resolve(queryResult);
+		},
+	
+		sobject() {
+			return {
+				retrieve() {
+					if(retrieveError) return Promise.reject(retrieveError);
+					return Promise.resolve(retrieveResult);
+				},
+				create() {
+					if(createErrorResult) return Promise.reject(createErrorResult);
+					return Promise.resolve(createCrudResult);
+				},
+				update() {
+					if(updateErrorResult) return Promise.reject(updateErrorResult);
+					return Promise.resolve(updateCrudResult);
+				},
+				delete() {
+					if(deleteErrorResult) return Promise.reject(deleteErrorResult);
+					return Promise.resolve(deleteCrudResult);
+				}
+			}
 		}
 	}
 };

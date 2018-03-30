@@ -1,11 +1,11 @@
-import { ConnectionDetails } from "../../src/models/ConnectionDetails";
-import { Connection } from "../../src/models/Connection";
-import { AbstractSobjectService } from "../../src/components/services/AbstractSobjectService";
-import { SobjectField } from "../../src/models/salesforce-metadata/SobjectField";
-import { SobjectDescribeBase } from "../../src/models/salesforce-metadata/SobjectDescribeBase";
-import { SobjectDescribe } from "../../src/models/salesforce-metadata/SobjectDescribe";
-import { GlobalDescribe } from "../../src/models/salesforce-metadata/GlobalDescribe";
-import { Sobject } from "../../src/models/sobjects/Sobject";
+import { ConnectionDetails } from "../src/models/ConnectionDetails";
+import { Connection } from "../src/models/Connection";
+import { AbstractSobjectService } from "../src/components/services/AbstractSobjectService";
+import { SobjectField } from "../src/models/salesforce-metadata/SobjectField";
+import { SobjectDescribeBase } from "../src/models/salesforce-metadata/SobjectDescribeBase";
+import { SobjectDescribe } from "../src/models/salesforce-metadata/SobjectDescribe";
+import { GlobalDescribe } from "../src/models/salesforce-metadata/GlobalDescribe";
+import { Sobject } from "../src/models/sobjects/Sobject";
 
 const mockConnectionDetails = new ConnectionDetails();
 mockConnectionDetails.instanceUrl = 'qwqw';

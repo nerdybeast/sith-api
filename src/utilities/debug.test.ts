@@ -1,4 +1,4 @@
-import { Debug } from "../src/utilities/debug";
+import { Debug } from "./debug";
 
 
 describe('Debug', () => {

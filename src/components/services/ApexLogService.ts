@@ -9,8 +9,11 @@ export class ApexLogService extends AbstractSobjectService {
 		super('ApexLog', connection);
 	}
 
-	public async retrieve(id: string) : Promise<ApexLog> {
-		return await this._retrieve<ApexLog>(id);
+	public async retrieve(ids: string) : Promise<ApexLog>;
+	public async retrieve(ids: string[]) : Promise<ApexLog[]>;
+	public async retrieve(ids: any) : Promise<any> {
+		if(Array.isArray(ids)) return await super.retrieve<ApexLog[]>(ids);
+		return await super.retrieve<ApexLog>(ids);
 	}
 
 	async getByUserId(userId: string, fieldsToQuery: string[], limit: number = 25) : Promise<ApexLog[]> {

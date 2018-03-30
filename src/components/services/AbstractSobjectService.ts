@@ -55,7 +55,12 @@ export abstract class AbstractSobjectService {
 		return fieldNames;
 	}
 
-	public abstract async retrieve(id: string);
+	public async retrieve<T>(ids: string) : Promise<T>;
+	public async retrieve<T>(ids: string[]) : Promise<T[]>;
+	public async retrieve<T>(ids: any) : Promise<any> {
+		if(Array.isArray(ids)) return this._performCrudAction<T[]>(ids, CrudAction.RETRIEVE);
+		return this._performCrudAction<T>(ids, CrudAction.RETRIEVE);
+	}
 
 	public async query(fieldNames: string[] | string, whereClause?: string) : Promise<QueryResult> {
 		
@@ -67,39 +72,31 @@ export abstract class AbstractSobjectService {
 		return await this._query(soql, sobjectMetadata.isTooling);
 	}
 
-	public async create(data: any) : Promise<CrudResult> {
-		return await this._create(data);
-	}
-
-	public async update(data: any) : Promise<CrudResult> {
-		return await this._update(data);
-	}
-
-	public async delete(data: any) : Promise<CrudResult> {
-		return await this._delete(data);
-	}
-
-	public async upsert(data: any) : Promise<CrudResult> {
-		return await this._upsert(data);
-	}
-
-	protected async _retrieve<T>(id: string) : Promise<T> {
-		return this._performCrudAction<T>(id, CrudAction.RETRIEVE);
-	}
-
-	protected async _create(data: any) : Promise<CrudResult> {
+	public async create(data: any) : Promise<CrudResult>;
+	public async create(data: any[]) : Promise<CrudResult[]>;
+	public async create(data: any) : Promise<any> {
+		if(Array.isArray(data)) return this._performCrudAction<CrudResult[]>(data, CrudAction.CREATE);
 		return this._performCrudAction<CrudResult>(data, CrudAction.CREATE);
 	}
 
-	protected async _update(data: any) : Promise<CrudResult> {
+	public async update(data: any) : Promise<CrudResult>;
+	public async update(data: any[]) : Promise<CrudResult[]>;
+	public async update(data: any) : Promise<any> {
+		if(Array.isArray(data)) return this._performCrudAction<CrudResult[]>(data, CrudAction.UPDATE);
 		return this._performCrudAction<CrudResult>(data, CrudAction.UPDATE);
 	}
 
-	protected async _delete(data: any) : Promise<CrudResult> {
-		return this._performCrudAction<CrudResult>(data, CrudAction.DELETE);
+	public async delete(ids: string) : Promise<CrudResult>;
+	public async delete(ids: string[]) : Promise<CrudResult[]>;
+	public async delete(ids: any) : Promise<any> {
+		if(Array.isArray(ids)) return this._performCrudAction<CrudResult[]>(ids, CrudAction.DELETE);
+		return this._performCrudAction<CrudResult>(ids, CrudAction.DELETE);
 	}
 
-	protected async _upsert(data: any) : Promise<CrudResult> {
+	public async upsert(data: any) : Promise<CrudResult>;
+	public async upsert(data: any[]) : Promise<CrudResult[]>;
+	public async upsert(data: any) : Promise<any> {
+		if(Array.isArray(data)) return this._performCrudAction<CrudResult[]>(data, CrudAction.UPSERT);
 		return this._performCrudAction<CrudResult>(data, CrudAction.UPSERT);
 	}
 

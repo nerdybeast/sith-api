@@ -8,8 +8,11 @@ export class DebugLevelService extends AbstractSobjectService {
 		super('DebugLevel', connection);
 	}
 
-	public async retrieve(id: string) : Promise<DebugLevel> {
-		return await this._retrieve<DebugLevel>(id);
+	public async retrieve(ids: string) : Promise<DebugLevel>;
+	public async retrieve(ids: string[]) : Promise<DebugLevel[]>;
+	public async retrieve(ids: any) : Promise<any> {
+		if(Array.isArray(ids)) return await super.retrieve<DebugLevel[]>(ids);
+		return await super.retrieve<DebugLevel>(ids);
 	}
 
 	async getDebugLevels(ids: string[], fieldsToQuery: string[]) : Promise<DebugLevel[]> {
