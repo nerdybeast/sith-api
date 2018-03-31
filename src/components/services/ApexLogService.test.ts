@@ -4,7 +4,7 @@ import { ApexLogService } from './ApexLogService';
 import { Sobject } from '../../models/sobjects/Sobject';
 import { QueryResult } from '../../models/query-result';
 import { JsforceError } from '../../models/JsforceError';
-import { generateMockConnection, generateGlobalDescribe } from '../../../test-helpers';
+import { generateMockConnection, generateGlobalDescribe } from '../../test-helpers';
 import { ApexLog } from '../../models/sobjects/ApexLog';
 
 describe('ApexLogService', () => {

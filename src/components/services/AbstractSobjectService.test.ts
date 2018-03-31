@@ -4,7 +4,7 @@ import { AbstractSobjectService } from './AbstractSobjectService';
 import { Sobject } from '../../models/sobjects/Sobject';
 import { QueryResult } from '../../models/query-result';
 import { JsforceError } from '../../models/JsforceError';
-import { generateMockConnection, generateGlobalDescribe } from '../../../test-helpers';
+import { generateMockConnection, generateGlobalDescribe } from '../../test-helpers';
 import { CrudResult } from '../../models/CrudResult';
 import { ErrorCode } from '../../models/enums/error-code';
 
