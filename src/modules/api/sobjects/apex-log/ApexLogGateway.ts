@@ -1,4 +1,4 @@
-import { fork, ChildProcess } from 'child_process';
+import { fork } from 'child_process';
 import { join } from 'path';
 import { WebSocketGateway, NestGateway, SubscribeMessage, WebSocketServer } from '@nestjs/websockets';
 import { Debug } from '../../../../utilities/debug';
@@ -52,9 +52,9 @@ export class ApexLogGateway implements NestGateway {
 		this.socketMap.set(socket.id, connectionDetails);
 
 		if(!this.pollingMap.get(connectionDetails.userId)) {
-			const userPoller = new UserPoller();
-			userPoller.connection = connectionDetails;
-			this.pollingMap.set(connectionDetails.userId, userPoller);
+			const newUserPoller = new UserPoller();
+			newUserPoller.connection = connectionDetails;
+			this.pollingMap.set(connectionDetails.userId, newUserPoller);
 		}
 
 		const userPoller = this.pollingMap.get(connectionDetails.userId);

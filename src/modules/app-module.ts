@@ -1,8 +1,7 @@
-import { Module, RequestMethod } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { AppController } from './app-controller';
 import { UserModule } from './user/user-module';
 import { OrgModule } from './org/org-module';
-import { ConnectionDetailsMiddleware } from '../middleware/ConnectionDetailsMiddleware';
 import { SobjectsModule } from './api/sobjects-module';
 import { MetadataModule } from './api/metadata/metadata-module';
 import { ToolingModule } from './api/tooling/tooling-module';

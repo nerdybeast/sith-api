@@ -5,7 +5,6 @@ import { Test } from '@nestjs/testing';
 import { ApplicationModule } from '../app-module';
 import { ClientCredentials } from '../../models/client-credentials';
 import { Profile } from '../../models/profile';
-import { TokenInformation } from '../../models/TokenInformation';
 
 //debugger;
 

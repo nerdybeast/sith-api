@@ -10,7 +10,6 @@ import { GlobalDescribe } from '../../models/salesforce-metadata/GlobalDescribe'
 import { SobjectDescribeBase } from '../../models/salesforce-metadata/SobjectDescribeBase';
 import { CrudAction } from '../../models/enums/crud-action';
 import * as camelCase from 'lodash.camelcase';
-import * as got from 'got';
 import { Connection } from '../../models/Connection';
 
 //This package is not es6 module friendly, have to import the commonjs way.

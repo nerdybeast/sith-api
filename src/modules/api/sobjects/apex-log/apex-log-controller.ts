@@ -1,6 +1,5 @@
 import { Controller, Body, Get, Post } from '@nestjs/common';
 import { UserInfo } from '../../../../decorators/UserInfoDecorator';
-import { AbstractSobjectService } from '../../../../components/services/AbstractSobjectService';
 import * as jsonapi from 'jsonapi-serializer';
 import { ApexLogService } from '../../../../components/services/ApexLogService';
 import { Connection } from '../../../../models/Connection';

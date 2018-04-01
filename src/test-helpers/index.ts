@@ -1,6 +1,5 @@
 import { ConnectionDetails } from '../models/ConnectionDetails';
 import { Connection } from '../models/Connection';
-import { AbstractSobjectService } from '../components/services/AbstractSobjectService';
 import { SobjectField } from '../models/salesforce-metadata/SobjectField';
 import { SobjectDescribeBase } from '../models/salesforce-metadata/SobjectDescribeBase';
 import { SobjectDescribe } from '../models/salesforce-metadata/SobjectDescribe';

@@ -1,7 +1,4 @@
-import { Connection } from '../../models/Connection';
-import { ConnectionDetails } from '../../models/ConnectionDetails';
 import { AbstractSobjectService } from './AbstractSobjectService';
-import { Sobject } from '../../models/sobjects/Sobject';
 import { QueryResult } from '../../models/query-result';
 import { JsforceError } from '../../models/JsforceError';
 import { generateMockConnection, generateGlobalDescribe } from '../../test-helpers';
@@ -14,7 +11,7 @@ describe('AbstractSobjectService', () => {
 
 	beforeAll(() => {
 
-		const globalDescribe = generateGlobalDescribe('MockSobject');
+		generateGlobalDescribe('MockSobject');
 		const connection = generateMockConnection();
 	
 		class MockSobjectService extends AbstractSobjectService {

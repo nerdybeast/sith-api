@@ -4,7 +4,6 @@ import { CrudResult } from '../../models/CrudResult';
 import { DebugLevelService } from './DebugLevelService';
 import * as jsonapi from 'jsonapi-serializer';
 import { Connection } from '../../models/Connection';
-import { ConnectionDetails } from '../../models/ConnectionDetails';
 
 export class TraceFlagService extends AbstractSobjectService {
 
