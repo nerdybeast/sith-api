@@ -119,7 +119,7 @@ describe('ApexLogService', () => {
 
 		require('got').__setResponse(mockDebugLogBody);
 
-		const apexLogs = await apexLogService.attachBody([mockApexLog])
+		const apexLogs = await apexLogService.attachBody([mockApexLog]);
 		expect(apexLogs).toHaveLength(1);
 		expect(apexLogs[0].id).toBe(mockApexLogId);
 		expect(apexLogs[0].body).toBe(mockDebugLogBody);
@@ -134,7 +134,7 @@ describe('ApexLogService', () => {
 
 		require('got').__setResponse(null);
 
-		const apexLogs = await apexLogService.attachBody([mockApexLog])
+		const apexLogs = await apexLogService.attachBody([mockApexLog]);
 		expect(apexLogs).toHaveLength(1);
 		expect(apexLogs[0].id).toBe(mockApexLogId);
 		expect(apexLogs[0].body).toBeUndefined();
@@ -158,7 +158,7 @@ describe('ApexLogService', () => {
 
 		const apexLogs = await apexLogService.getApexLogs('1a2b3c', ['Id', 'Name']);
 		expect(apexLogs).toHaveLength(1);
-		expect(apexLogs[0].id).toBe(mockApexLog.id)
+		expect(apexLogs[0].id).toBe(mockApexLog.id);
 		expect(apexLogs[0].body).toBe(mockDebugLogBody);
 	});
 });
