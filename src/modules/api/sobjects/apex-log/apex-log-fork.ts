@@ -1,14 +1,11 @@
-import { Debug } from '../../../../utilities/debug';
 import { ConnectionDetails } from '../../../../models/ConnectionDetails';
 import * as isEqual from 'lodash.isequal';
 import { TraceFlagIPC } from '../../../../models/ipc/TraceFlagIPC';
-import { DebugLevelService } from '../../../../components/services/DebugLevelService';
 import { ApexLogService } from '../../../../components/services/ApexLogService';
 import { ApexLog } from '../../../../models/sobjects/ApexLog';
 import { ApexLogsUpdateIPC } from '../../../../models/ipc/ApexLogsUpdateIPC';
 import { Connection } from '../../../../models/Connection';
 
-const debug = new Debug('trace-flag-fork');
 let connections: ConnectionDetails[] = [];
 let existingApexLogs: ApexLog[];
 let pollerRunning = false;

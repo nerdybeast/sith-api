@@ -1,10 +1,9 @@
-import { Debug } from "./debug";
-
+import { Debug } from './debug';
 
 describe('Debug', () => {
 
 	test('Can construct debug class', () => {
-		const debug = new Debug('test');
+		new Debug('test');
 	});
 
 	test('Can debug an error', () => {

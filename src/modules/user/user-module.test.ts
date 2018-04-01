@@ -5,15 +5,14 @@ import { Test } from '@nestjs/testing';
 import { ApplicationModule } from '../app-module';
 import { ClientCredentials } from '../../models/client-credentials';
 import { Profile } from '../../models/profile';
-import { TokenInformation } from '../../models/TokenInformation';
 
-debugger;
+//debugger;
 
 describe('User Module', () => {
 
 	const server = express();
 
-	const tokenInformation = { sub: '12345' }
+	const tokenInformation = { sub: '12345' };
 	const accessToken = jwt.sign(tokenInformation, '123');
 
 	beforeAll(async () => {

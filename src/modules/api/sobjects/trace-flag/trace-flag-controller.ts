@@ -1,6 +1,5 @@
 import { Controller, Body, Param, Get, Post, Patch, Delete, HttpCode } from '@nestjs/common';
 import { UserInfo } from '../../../../decorators/UserInfoDecorator';
-import { AbstractSobjectService } from '../../../../components/services/AbstractSobjectService';
 import * as jsonapi from 'jsonapi-serializer';
 import { TraceFlag } from '../../../../models/sobjects/TraceFlag';
 import { TraceFlagService } from '../../../../components/services/TraceFlagService';
@@ -20,9 +19,9 @@ export class TraceFlagController {
 		]);
 		
 		const traceFlags = await traceFlagService.getTraceFlags(connection.details.userId, traceFlagFieldNames, debugLevelFieldNames);
-		const data = TraceFlagService.serializeToJsonApi(traceFlags, traceFlagFieldNames, debugLevelFieldNames);
+		const serializedTraceFlags = TraceFlagService.serializeToJsonApi(traceFlags, traceFlagFieldNames, debugLevelFieldNames);
 
-		return data;
+		return serializedTraceFlags;
 	}
 
 	@Post('/trace-flags')
@@ -31,9 +30,9 @@ export class TraceFlagController {
 		const newTraceFlag = await new Promise((resolve, reject) => {
 			new jsonapi.Deserializer({
 				keyForAttribute: 'camelCase'
-			}).deserialize(body, (error, data) => {
+			}).deserialize(body, (error, deserializedTraceFlag) => {
 				if(error) return reject(error);
-				return resolve(data);
+				return resolve(deserializedTraceFlag);
 			});
 		});
 
@@ -45,12 +44,12 @@ export class TraceFlagController {
 			traceFlagService.getSobjectFieldNames()
 		]);
 
-		const data = new jsonapi.Serializer('trace-flag', {
+		const serializedTraceFlags = new jsonapi.Serializer('trace-flag', {
 			attributes: fieldNames,
 			keyForAttribute: 'camelCase'
 		}).serialize(traceFlag);
 
-		return data;
+		return serializedTraceFlags;
 	}
 
 	@Patch('/trace-flags/:id')
@@ -61,9 +60,9 @@ export class TraceFlagController {
 		const traceFlag = await new Promise((resolve, reject) => {
 			new jsonapi.Deserializer({
 				keyForAttribute: 'camelCase'
-			}).deserialize(body, (error, data) => {
+			}).deserialize(body, (error, deserializedTraceFlag) => {
 				if(error) return reject(error);
-				return resolve(data);
+				return resolve(deserializedTraceFlag);
 			});
 		});
 
@@ -75,12 +74,12 @@ export class TraceFlagController {
 			traceFlagService.getSobjectFieldNames()
 		]);
 
-		const data = new jsonapi.Serializer('trace-flag', {
+		const serializedTraceFlags = new jsonapi.Serializer('trace-flag', {
 			attributes: fieldNames,
 			keyForAttribute: 'camelCase'
 		}).serialize(updatedTraceFlag);
 
-		return data;
+		return serializedTraceFlags;
 	}
 
 	@Delete('/trace-flags/:id')

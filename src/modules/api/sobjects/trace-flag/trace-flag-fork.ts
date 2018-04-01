@@ -1,6 +1,3 @@
-import { Debug } from '../../../../utilities/debug';
-import { IpcMessage } from '../../../../models/IpcMessage';
-import { IpcMessageType } from '../../../../models/enums/ipc-message-type';
 import { TraceFlag } from '../../../../models/sobjects/TraceFlag';
 import { TraceFlagService } from '../../../../components/services/TraceFlagService';
 import { ConnectionDetails } from '../../../../models/ConnectionDetails';
@@ -11,7 +8,6 @@ import { UserTraceFlags } from '../../../../models/ipc/UserTraceFlags';
 import { TraceFlagsUpdateIPC } from '../../../../models/ipc/TraceFlagsUpdateIPC';
 import { Connection } from '../../../../models/Connection';
 
-const debug = new Debug('trace-flag-fork');
 let connections: ConnectionDetails[] = [];
 let existingTraceFlags: TraceFlag[];
 let pollerRunning = false;

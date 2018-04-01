@@ -1,6 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
 import { UserInfo } from '../../../../decorators/UserInfoDecorator';
-import { AbstractSobjectService } from '../../../../components/services/AbstractSobjectService';
 import * as jsonapi from 'jsonapi-serializer';
 import { DebugLevelService } from '../../../../components/services/DebugLevelService';
 import { Connection } from '../../../../models/Connection';

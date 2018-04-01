@@ -1,25 +1,18 @@
-import * as express from 'express';
-import * as request from 'supertest';
 import * as jwt from 'jsonwebtoken';
-import { Test } from '@nestjs/testing';
-import { ApplicationModule } from '../app-module';
 import { ClientCredentials } from '../../models/client-credentials';
 import { Profile } from '../../models/profile';
 import { UserController } from './user-controller';
 import { UserService } from './user-service';
 import { AuthService } from '../../components/services/AuthService';
-import { TokenInformation } from '../../models/TokenInformation';
 
-debugger;
+//debugger;
 
 describe('User Module', () => {
 
-	const tokenInformation = { sub: '12345' }
+	const tokenInformation = { sub: '12345' };
 	const accessToken = jwt.sign(tokenInformation, '123');
 
 	beforeAll(async () => {
-
-
 
 	});
 
@@ -93,31 +86,4 @@ describe('User Module', () => {
 		expect(profile.user_id).toBe(tokenInformation.sub);
 	});
 
-	// test(`GET /api/user/profile`, async () => {
-		
-	// 	const clientCredentials = new ClientCredentials();
-	// 	clientCredentials.access_token = accessToken;
-	// 	clientCredentials.expires_in = 60000;
-	// 	clientCredentials.scope = 'not sure';
-	// 	clientCredentials.token_type = 'Bearer';
-
-	// 	const profile = new Profile();
-	// 	profile.name = 'Bruce Banner';
-
-	// 	require('got').__setResponses([{
-	// 		success: true,
-	// 		body: clientCredentials
-	// 	}, {
-	// 		success: true,
-	// 		body: profile
-	// 	}]);
-
-	// 	const response = await request(server)
-	// 		.post('/api/user/profile')
-	// 		.send({ token: accessToken });
-
-	// 	expect(response.status).toBe(201);
-	// 	expect(response.body).toHaveProperty('name');
-	// 	expect(response.body.name).toBe(profile.name);
-	// });
 });

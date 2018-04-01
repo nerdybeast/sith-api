@@ -4,12 +4,6 @@ import { WebSocketGateway, NestGateway, SubscribeMessage, WebSocketServer } from
 import { Debug } from '../../../../utilities/debug';
 import { ConnectionDetails } from '../../../../models/ConnectionDetails';
 import { TraceFlagService } from '../../../../components/services/TraceFlagService';
-import { TraceFlag } from '../../../../models/sobjects/TraceFlag';
-import * as isEqual from 'lodash.isequal';
-import * as jsonapi from 'jsonapi-serializer';
-import { error } from 'util';
-import { IpcMessage } from '../../../../models/IpcMessage';
-import { IpcMessageType } from '../../../../models/enums/ipc-message-type';
 import { TraceFlagIPC } from '../../../../models/ipc/TraceFlagIPC';
 import { TraceFlagsUpdateIPC } from '../../../../models/ipc/TraceFlagsUpdateIPC';
 
@@ -98,9 +92,9 @@ export class TraceFlagGateway implements NestGateway {
 		this.socketMap.set(socketId, connectionDetails);
 
 		if(!this.pollingMap.get(organizationId)) {
-			const orgPoller = new OrgPoller();
-			orgPoller.connections = [];
-			this.pollingMap.set(organizationId, orgPoller);
+			const newOrgPoller = new OrgPoller();
+			newOrgPoller.connections = [];
+			this.pollingMap.set(organizationId, newOrgPoller);
 		}
 		
 		const orgPoller = this.pollingMap.get(organizationId);
@@ -110,10 +104,10 @@ export class TraceFlagGateway implements NestGateway {
 		}
 
 		if(orgPoller.fork && orgPoller.fork.connected) {
-			const ipc = new TraceFlagIPC();
-			ipc.connections = orgPoller.connections;
-			ipc.pollingRateInMilliseconds = Number(process.env.TRACE_FLAG_POLLING_RATE);
-			orgPoller.fork.send(ipc);
+			const newTraceFlagIpc = new TraceFlagIPC();
+			newTraceFlagIpc.connections = orgPoller.connections;
+			newTraceFlagIpc.pollingRateInMilliseconds = Number(process.env.TRACE_FLAG_POLLING_RATE);
+			orgPoller.fork.send(newTraceFlagIpc);
 			return;
 		}
 
