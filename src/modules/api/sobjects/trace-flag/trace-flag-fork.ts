@@ -55,10 +55,15 @@ export async function poll(pollingRateInMilliseconds: number) {
 	let queryResult = await traceFlagService.query(traceFlagFieldNames, `WHERE TracedEntityId IN (${soqlSafeInClause})`);
 	let traceFlags = queryResult.records as TraceFlag[];
 
-	let debugLevelIds = traceFlags.map(x => x.debugLevelId);
-	let debugLevels = await debugLevelService.getDebugLevels(debugLevelIds, debugLevelFieldNames);
-	
-	traceFlags.forEach(tf => tf.debugLevel = debugLevels.find(dl => dl.id === tf.debugLevelId));
+	let debugLevelIds;
+	let debugLevels;
+
+	if(traceFlags.length > 0) {
+		debugLevelIds = traceFlags.map(x => x.debugLevelId);
+		debugLevels = await debugLevelService.getDebugLevels(debugLevelIds, debugLevelFieldNames);
+		
+		traceFlags.forEach(tf => tf.debugLevel = debugLevels.find(dl => dl.id === tf.debugLevelId));
+	}
 
 	if(existingTraceFlags === undefined) existingTraceFlags = traceFlags;
 
@@ -67,15 +72,10 @@ export async function poll(pollingRateInMilliseconds: number) {
 		existingTraceFlags = traceFlags;
 
 		const usersList = connections.map(x => {
-			
 			const usersTraceFlags = traceFlags.filter(tf => tf.tracedEntityId === x.userId);
-
-			if(usersTraceFlags.length > 0) {
-				return new UserTraceFlags(x.userId, usersTraceFlags);
-			}
+			return new UserTraceFlags(x.userId, usersTraceFlags);
 		});
 
-		//invokeProcessFn('send', { traceFlags, traceFlagFieldNames, debugLevelFieldNames });
 		invokeProcessFn('send', new TraceFlagsUpdateIPC(usersList, traceFlagFieldNames, debugLevelFieldNames));
 	}
 
