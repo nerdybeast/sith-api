@@ -124,8 +124,7 @@ export abstract class AbstractSobjectService {
 
 			const ex: JsforceError = error;
 
-			if(ex.errorCode === ErrorCode.INVALID_SESSION_ID) throw new UnauthorizedException(ex.message);
-			throw new BadRequestException(ex.message);
+			this.handleJsforceError(ex);
 		}
 	}
 
@@ -153,8 +152,7 @@ export abstract class AbstractSobjectService {
 
 			const ex: JsforceError = error;
 
-			if(ex.errorCode === ErrorCode.INVALID_SESSION_ID) throw new UnauthorizedException(ex.message);
-			throw new BadRequestException(ex.message);
+			this.handleJsforceError(ex);
 		}
 	}
 
@@ -179,8 +177,7 @@ export abstract class AbstractSobjectService {
 
 			const ex: JsforceError = error;
 
-			if(ex.errorCode === ErrorCode.INVALID_SESSION_ID) throw new UnauthorizedException(ex.message);
-			throw new BadRequestException(ex.message);
+			this.handleJsforceError(ex);
 		}
 	}
 
@@ -226,9 +223,13 @@ export abstract class AbstractSobjectService {
 
 			const ex: JsforceError = error;
 
-			if(ex.errorCode === ErrorCode.INVALID_SESSION_ID) throw new UnauthorizedException(ex.message);
-			if(ex.errorCode === ErrorCode.REQUEST_LIMIT_EXCEEDED) throw new ForbiddenException(ex.message);
-			throw new BadRequestException(ex.message);
+			this.handleJsforceError(ex);
 		}
+	}
+
+	private handleJsforceError(ex: JsforceError) : void {
+		if(ex.errorCode === ErrorCode.INVALID_SESSION_ID) throw new UnauthorizedException(ex.message);
+		if(ex.errorCode === ErrorCode.REQUEST_LIMIT_EXCEEDED) throw new ForbiddenException(ex.message);
+		throw new BadRequestException(ex.message);
 	}
 }

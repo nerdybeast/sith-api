@@ -4,13 +4,13 @@ import * as morgan from 'morgan';
 import * as bodyParser from 'body-parser';
 import { ApplicationModule } from './modules/app-module';
 import { JsonApiInterceptor } from './components/interceptors/json-api-interceptor';
-import { InvalidSessionIdFilter } from './components/filters/invalid-session-id';
 import { Debug } from './utilities/debug';
+import { GlobalExceptionFilter } from './components/filters/GlobalExceptionFilter';
 
 (async function bootstrap() {
 	const app = await NestFactory.create(ApplicationModule);
 	app.useGlobalInterceptors(new JsonApiInterceptor());
-	app.useGlobalFilters(new InvalidSessionIdFilter());
+	app.useGlobalFilters(new GlobalExceptionFilter());
 	app.use(morgan('dev'));
 	app.use(cors());
 	
