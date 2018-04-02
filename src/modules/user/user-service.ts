@@ -1,5 +1,5 @@
 import { Component } from '@nestjs/common';
-import { AuthService } from '../../components/services/auth-service';
+import { AuthService } from '../../components/services/AuthService';
 
 @Component()
 export class UserService {

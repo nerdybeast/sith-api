@@ -7,7 +7,7 @@ export class Debug {
 	private infoDebugger;
 	private verboseDebugger;
 
-	constructor(private debuggerName: string) {
+	constructor(debuggerName: string) {
 		const namespace = 'SITH-API';
 		this.errorDebugger = debug(`${namespace}:error:${debuggerName}`);
 		this.warningDebugger = debug(`${namespace}:warning:${debuggerName}`);
