@@ -1,14 +1,13 @@
-import { Debug } from '../../../../utilities/debug';
-import { IpcMessage } from '../../../../models/IpcMessage';
-import { IpcMessageType } from '../../../../models/enums/ipc-message-type';
 import { TraceFlag } from '../../../../models/sobjects/TraceFlag';
 import { TraceFlagService } from '../../../../components/services/TraceFlagService';
 import { ConnectionDetails } from '../../../../models/ConnectionDetails';
 import * as isEqual from 'lodash.isequal';
 import { TraceFlagIPC } from '../../../../models/ipc/TraceFlagIPC';
 import { DebugLevelService } from '../../../../components/services/DebugLevelService';
+import { UserTraceFlags } from '../../../../models/ipc/UserTraceFlags';
+import { TraceFlagsUpdateIPC } from '../../../../models/ipc/TraceFlagsUpdateIPC';
+import { Connection } from '../../../../models/Connection';
 
-const debug = new Debug('trace-flag-fork');
 let connections: ConnectionDetails[] = [];
 let existingTraceFlags: TraceFlag[];
 let pollerRunning = false;
@@ -40,8 +39,10 @@ export async function poll(pollingRateInMilliseconds: number) {
 		return;
 	}
 
-	let traceFlagService = new TraceFlagService(connections[0]);
-	let debugLevelService = new DebugLevelService(connections[0]);
+	let connection = connections[0];
+
+	let traceFlagService = new TraceFlagService(new Connection(connection));
+	let debugLevelService = new DebugLevelService(new Connection(connection));
 
 	let [traceFlagFieldNames, debugLevelFieldNames] = await Promise.all([
 		traceFlagService.getSobjectFieldNames(),
@@ -54,10 +55,15 @@ export async function poll(pollingRateInMilliseconds: number) {
 	let queryResult = await traceFlagService.query(traceFlagFieldNames, `WHERE TracedEntityId IN (${soqlSafeInClause})`);
 	let traceFlags = queryResult.records as TraceFlag[];
 
-	let debugLevelIds = traceFlags.map(x => x.debugLevelId);
-	let debugLevels = await debugLevelService.getDebugLevels(debugLevelIds, debugLevelFieldNames);
-	
-	traceFlags.forEach(tf => tf.debugLevel = debugLevels.find(dl => dl.id === tf.debugLevelId));
+	let debugLevelIds;
+	let debugLevels;
+
+	if(traceFlags.length > 0) {
+		debugLevelIds = traceFlags.map(x => x.debugLevelId);
+		debugLevels = await debugLevelService.getDebugLevels(debugLevelIds, debugLevelFieldNames);
+		
+		traceFlags.forEach(tf => tf.debugLevel = debugLevels.find(dl => dl.id === tf.debugLevelId));
+	}
 
 	if(existingTraceFlags === undefined) existingTraceFlags = traceFlags;
 
@@ -65,9 +71,15 @@ export async function poll(pollingRateInMilliseconds: number) {
 		
 		existingTraceFlags = traceFlags;
 
-		invokeProcessFn('send', { traceFlags, traceFlagFieldNames, debugLevelFieldNames });
+		const usersList = connections.map(x => {
+			const usersTraceFlags = traceFlags.filter(tf => tf.tracedEntityId === x.userId);
+			return new UserTraceFlags(x.userId, usersTraceFlags);
+		});
+
+		invokeProcessFn('send', new TraceFlagsUpdateIPC(usersList, traceFlagFieldNames, debugLevelFieldNames));
 	}
 
+	connection = undefined;
 	traceFlagService = undefined;
 	debugLevelService = undefined;
 	traceFlagFieldNames = undefined;
@@ -81,16 +93,3 @@ export async function poll(pollingRateInMilliseconds: number) {
 
 	setTimeout(() => poll(pollingRateInMilliseconds), pollingRateInMilliseconds);
 }
-
-// const x = new ConnectionDetails();
-// x.instanceUrl = 'https://vivint--DevGrnAcre.cs22.my.salesforce.com';
-// x.organizationId = '00D17000000BLCaEAO';
-// x.orgVersion = 'v40.0';
-// x.sessionId = '00D17000000BLCa!AQoAQKE_YdYSjTTafqoR1M2OzUvDQzdOY4BRTwmjrrvF4mcs6M1vJJYn2CVAKBIbmt0yN35SYPJIV9ngXd2Zc9Y9VSgrGxX3';
-// x.userId = '005G0000003pal8IAA';
-
-// const y = new TraceFlagIPC();
-// y.connections = [x];
-// y.pollingRateInMilliseconds = 10;
-
-// onMessage(y);

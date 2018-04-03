@@ -5,6 +5,8 @@
 		"noImplicitAny": false,
 		"removeComments": true,
 		"noLib": false,
+		"noUnusedLocals": true,
+		//"noUnusedParameters": true,
 		"emitDecoratorMetadata": true,
 		"experimentalDecorators": true,
 		"target": "es6",
@@ -14,9 +16,5 @@
 	},
 	"include": [
 		"src/**/*"
-	],
-	"exclude": [
-		"node_modules",
-		"**/*.spec.ts"
 	]
 }

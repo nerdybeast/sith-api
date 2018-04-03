@@ -1,4 +1,4 @@
-import { fork, ChildProcess } from 'child_process';
+import { fork } from 'child_process';
 import { join } from 'path';
 import { WebSocketGateway, NestGateway, SubscribeMessage, WebSocketServer } from '@nestjs/websockets';
 import { Debug } from '../../../../utilities/debug';
@@ -6,8 +6,9 @@ import { ConnectionDetails } from '../../../../models/ConnectionDetails';
 import { UserPoller } from '../../../../models/ipc/UserPoller';
 import { TraceFlagIPC } from '../../../../models/ipc/TraceFlagIPC';
 import * as jsonapi from 'jsonapi-serializer';
+import { ApexLogsUpdateIPC } from '../../../../models/ipc/ApexLogsUpdateIPC';
 
-@WebSocketGateway({ namespace: 'apex-logs' })
+@WebSocketGateway({ namespace: 'APEX_LOGS' })
 export class ApexLogGateway implements NestGateway {
 
 	@WebSocketServer() server;
@@ -49,12 +50,17 @@ export class ApexLogGateway implements NestGateway {
 	@SubscribeMessage('start')
 	async start(socket, connectionDetails: ConnectionDetails) {
 
+		//Have each socket for the same user join a "room" so that we can emit messages to this single user.
+		//If the user has multiple browser tabs open for this app, that would be multiple sockets for the same user.
+		//NOTE: Sockets automatically leave rooms when they disconnect.
+		socket.join(connectionDetails.userId);
+
 		this.socketMap.set(socket.id, connectionDetails);
 
 		if(!this.pollingMap.get(connectionDetails.userId)) {
-			const userPoller = new UserPoller();
-			userPoller.connection = connectionDetails;
-			this.pollingMap.set(connectionDetails.userId, userPoller);
+			const newUserPoller = new UserPoller();
+			newUserPoller.connection = connectionDetails;
+			this.pollingMap.set(connectionDetails.userId, newUserPoller);
 		}
 
 		const userPoller = this.pollingMap.get(connectionDetails.userId);
@@ -69,7 +75,7 @@ export class ApexLogGateway implements NestGateway {
 		childProcess.on('disconnect', (code: number, signal: string) => this.debug.warning(`child process ${childProcess.pid} disconnected, code: "${code}", signal: "${signal}"`));
 		childProcess.on('error', (error: Error) => this.debug.warning(`child process ${childProcess.pid} threw an error`, error));
 		childProcess.on('exit', (code: number, signal: string) => this.debug.info(`child process ${childProcess.pid} exit, code: "${code}", signal: "${signal}"`));
-		childProcess.on('message', (message: any) => this.onChildProcessMessage(message));
+		childProcess.on('message', (message: ApexLogsUpdateIPC) => this.onChildProcessMessage(message));
 
 		userPoller.fork = childProcess;
 
@@ -80,20 +86,18 @@ export class ApexLogGateway implements NestGateway {
 		userPoller.fork.send(ipc);
 	}
 
-	onChildProcessMessage(message: any) {
-		this.debug.verbose(`message from child process`, message);
-		const { apexLogs, apexLogFieldNames } = message;
+	onChildProcessMessage(ipc: ApexLogsUpdateIPC) {
 
 		const data = new jsonapi.Serializer('apex-log', {
-			attributes: [...apexLogFieldNames, 'body'],
+			attributes: [...ipc.fieldNames, 'body'],
 			keyForAttribute: 'camelCase',
 			typeForAttribute(attr) {
 				//Prevents this serializer from converting "apex-log" to its plural form "apex-logs"
 				return attr;
 			}
-		}).serialize(apexLogs);
+		}).serialize(ipc.apexLogs);
 
-		this.server.emit('apex-logs-update', data);
+		this.server.to(ipc.userId).emit('apex-logs-update', data);
 	}
 
 	private _isLastSingleUserConnection(connectionsMap: Map<string, ConnectionDetails>, userId: string) : boolean {

@@ -1,12 +1,11 @@
-import { Debug } from '../../../../utilities/debug';
 import { ConnectionDetails } from '../../../../models/ConnectionDetails';
 import * as isEqual from 'lodash.isequal';
 import { TraceFlagIPC } from '../../../../models/ipc/TraceFlagIPC';
-import { DebugLevelService } from '../../../../components/services/DebugLevelService';
 import { ApexLogService } from '../../../../components/services/ApexLogService';
 import { ApexLog } from '../../../../models/sobjects/ApexLog';
+import { ApexLogsUpdateIPC } from '../../../../models/ipc/ApexLogsUpdateIPC';
+import { Connection } from '../../../../models/Connection';
 
-const debug = new Debug('trace-flag-fork');
 let connections: ConnectionDetails[] = [];
 let existingApexLogs: ApexLog[];
 let pollerRunning = false;
@@ -39,7 +38,7 @@ export async function poll(pollingRateInMilliseconds: number) {
 	}
 
 	let connection = connections[0];
-	let apexLogService = new ApexLogService(connection);
+	let apexLogService = new ApexLogService(new Connection(connection));
 
 	let [apexLogFieldNames] = await Promise.all([
 		apexLogService.getSobjectFieldNames()
@@ -54,10 +53,9 @@ export async function poll(pollingRateInMilliseconds: number) {
 		existingApexLogs = apexLogsWithoutBody;
 		const apexLogs = await apexLogService.attachBody(apexLogsWithoutBody);
 
-		invokeProcessFn('send', { 
-			apexLogs: apexLogs.filter(log => log.body),
-			apexLogFieldNames
-		});
+		const ipc = new ApexLogsUpdateIPC(connection.userId, apexLogs.filter(log => log.body), apexLogFieldNames);
+
+		invokeProcessFn('send', ipc);
 	}
 
 	connection = undefined;

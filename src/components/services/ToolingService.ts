@@ -1,11 +1,6 @@
-import * as got from 'got';
-import * as jsforce from 'jsforce';
-import { ConnectionDetails } from '../../models/ConnectionDetails';
 import { Debug } from '../../utilities/debug';
 import { AnonymousApexResult } from '../../models/salesforce-metadata/AnonymousApexResult';
-import { AbstractSobjectService } from './AbstractSobjectService';
-import { SobjectDescribeBase } from '../../models/salesforce-metadata/SobjectDescribeBase';
-import { SobjectDescribe } from '../../models/salesforce-metadata/SobjectDescribe';
+import { Connection } from '../../models/Connection';
 
 export class ToolingService extends AbstractSobjectService {
 
@@ -13,8 +8,9 @@ export class ToolingService extends AbstractSobjectService {
 		super('Tooling', connectionDetails);
 	}
 
-	public async retrieve(id: string) {
-
+	constructor(connection: Connection) {
+		this.conn = connection.jsforce;
+		this.debug = new Debug(`ToolingService`);
 	}
 
 	public async executeAnonymousApex(apex: string) : Promise<AnonymousApexResult> {

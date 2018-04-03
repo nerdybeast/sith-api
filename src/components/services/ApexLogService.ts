@@ -1,16 +1,19 @@
 import { AbstractSobjectService } from './AbstractSobjectService';
-import { ConnectionDetails } from '../../models/ConnectionDetails';
 import { ApexLog } from '../../models/sobjects/ApexLog';
 import * as got from 'got';
+import { Connection } from '../../models/Connection';
 
 export class ApexLogService extends AbstractSobjectService {
 	
-	constructor(connectionDetails: ConnectionDetails) {
-		super('ApexLog', connectionDetails);
+	constructor(connection: Connection) {
+		super('ApexLog', connection);
 	}
 
-	public async retrieve(id: string) : Promise<ApexLog> {
-		return await this._retrieve<ApexLog>(id);
+	public async retrieve(ids: string) : Promise<ApexLog>;
+	public async retrieve(ids: string[]) : Promise<ApexLog[]>;
+	public async retrieve(ids: any) : Promise<any> {
+		if(Array.isArray(ids)) return await super.retrieve<ApexLog[]>(ids);
+		return await super.retrieve<ApexLog>(ids);
 	}
 
 	async getByUserId(userId: string, fieldsToQuery: string[], limit: number = 25) : Promise<ApexLog[]> {
@@ -29,11 +32,8 @@ export class ApexLogService extends AbstractSobjectService {
 		const debugLogs = (await Promise.all(debugLogPromises)) as any[];
 
 		const apexLogs = apexLogRecords.map(log => {
-			
 			const debugLog = debugLogs.find(x => x.id === log.id);
-			if(!debugLog.body) return;
-
-			log.body = debugLog.body;
+			if(debugLog.body) log.body = debugLog.body;
 			return log;
 		});
 
@@ -55,7 +55,7 @@ export class ApexLogService extends AbstractSobjectService {
 	async getDebugLog(id: string) : Promise<string> {
 		try {
 			
-			const response = await got(`${this.connectionDetails.instanceUrl}/services/data/v${this.connectionDetails.orgVersion}/tooling/sobjects/ApexLog/${id}/Body`, {
+			const response = await got.get(`${this.connectionDetails.instanceUrl}/services/data/v${this.connectionDetails.orgVersion}/tooling/sobjects/ApexLog/${id}/Body`, {
 				headers: { Authorization: `Bearer ${this.connectionDetails.sessionId}` }
 			});
 	
@@ -69,7 +69,5 @@ export class ApexLogService extends AbstractSobjectService {
 			this.debug.error(`Error fetching the debug log body for "${id}"`, error);
 			throw error;
 		}
-
-		
 	}
 }

@@ -1,6 +1,6 @@
-import { promisify } from 'util';
+// import { promisify } from 'util';
 import { Component } from '@nestjs/common';
-import * as redis from 'redis';
+// import * as redis from 'redis';
 import { ICache } from '../../interfaces/ICache';
 
 // promisify(redis.RedisClient.prototype);

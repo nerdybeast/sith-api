@@ -26,7 +26,7 @@ export class AuthService {
 
 	async getProfile(clientCredentials: ClientCredentials, userId: string) : Promise<Profile> {
 
-		const result = await got(`https://sith-oath.auth0.com/api/v2/users/${userId}`, {
+		const result = await got.get(`https://sith-oath.auth0.com/api/v2/users/${userId}`, {
 			json: true,
 			headers: {
 				'content-type': 'application/json',
