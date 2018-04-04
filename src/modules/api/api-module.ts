@@ -1,5 +1,4 @@
-import { Module, NestModule, MiddlewaresConsumer } from '@nestjs/common';
-import { ConnectionDetailsMiddleware } from '../../middleware/ConnectionDetailsMiddleware';
+import { Module } from '@nestjs/common';
 import { ToolingModule } from './tooling/tooling-module';
 import { MetadataModule } from './metadata/metadata-module';
 import { SobjectsModule } from './sobjects/sobjects-module';

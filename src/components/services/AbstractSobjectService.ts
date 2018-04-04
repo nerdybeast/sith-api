@@ -66,9 +66,9 @@ export abstract class AbstractSobjectService {
 		if(fieldNames === '*') fieldNames = await this.getSobjectFieldNames();
 		whereClause = whereClause || '';
 
-		const sobjectMetadata = await this._getSobjectMetadata(this.sobjectName);
+		const sobjectMetadata = await this._describeSobjectBase(this.sobjectName);
 		const soql = `SELECT ${fieldNames} FROM ${this.sobjectName} ${whereClause}`;
-		return await this._query(soql, sobjectBaseMetadata.isTooling);
+		return await this._query(soql, sobjectMetadata.isTooling);
 	}
 
 	public async create(data: any) : Promise<CrudResult>;

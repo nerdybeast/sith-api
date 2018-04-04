@@ -1,16 +1,13 @@
-import { Debug } from '../../utilities/debug';
 import { AnonymousApexResult } from '../../models/salesforce-metadata/AnonymousApexResult';
 import { Connection } from '../../models/Connection';
+import { AbstractSobjectService } from './AbstractSobjectService';
+import { SobjectDescribeBase } from '../../models/salesforce-metadata/SobjectDescribeBase';
+import { SobjectDescribe } from '../../models/salesforce-metadata/SobjectDescribe';
 
 export class ToolingService extends AbstractSobjectService {
 
-	constructor(connectionDetails: ConnectionDetails) {
-		super('Tooling', connectionDetails);
-	}
-
 	constructor(connection: Connection) {
-		this.conn = connection.jsforce;
-		this.debug = new Debug(`ToolingService`);
+		super('Tooling', connection);
 	}
 
 	public async executeAnonymousApex(apex: string) : Promise<AnonymousApexResult> {
