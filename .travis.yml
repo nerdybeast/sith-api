@@ -1,3 +1,6 @@
 language: node_js
 node_js:
   - "lts/*"
+notifications:
+  slack:
+    secure: "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA1aVrA8Xkiymd7UTISkZG eNKIFuQkjfkLYJ/jZJFwcZ34qllWqN+Vu+Q32OwCesijaSz3A8O2bagpgLoeV1dy TzbHzBrHAyor0M74JS3I+14YAThbFT0yvk+rcjxsxMj2i7K9WFYVkOlru/5G+9G9 vRTj+t8OnXhBs1hHMlBNGt11sGJ71KbmhqVTWA0nQJ/frFugW0XbmAA7uOrHJhIs y1GDGC2CDEHpcZsdJxmElj1RkvIyS5ytbuDEc+ZY8FMxWA0wN5L6Mjmmix5PaNP/ iOmB1MgU28AeTADqwzOD6CNtdBvMCAXvzxFL0jX0ADe8kohAGGw1omqiz2G7odr4 fI3uHo97ga9a+eb0AKiG+fFGy1JqqjYnSeubZYeLyAhq5iXqvQ44XzPqP6Mm7G/R LB6zWvM4ixpeN8ZTZdcJ/AtpoiVusq4y3Hd4rf7EEWYAD5CF+EQFXKKja68f3Mtz 19ih8U/RLdvi71ypI2hX2I4hY+D6kra+i5iTOcQlqiR4hA7G2STJ6/cASb96nDBm UWOmsp+R52uxCfhpuy+36fG9Pe9+i2XJgxHYo/ngFMVzhoCfT9wdJsPKmxHRDjsO ftBc23kBa9J+bdy800pEmV58fubpmFF/+aY+jf7gXlL1i+mpV9ePFR3/gIk7fyjm 8sjXJAIrW4E2OnHYWgWxOvUCAwEAAQ=="
