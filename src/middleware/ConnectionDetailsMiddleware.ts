@@ -14,6 +14,7 @@ export class ConnectionDetailsMiddleware implements NestMiddleware {
 			connectionDetails.orgVersion = req.headers['org-version'];
 
 			req.connectionDetails = connectionDetails;
+			req.user = connectionDetails;
 
 			next();
 		};
