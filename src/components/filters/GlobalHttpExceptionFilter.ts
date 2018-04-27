@@ -9,11 +9,8 @@ export class GlobalHttpExceptionFilter implements ExceptionFilter {
 		const status = exception.getStatus();
 		const exceptionResponse = exception.getResponse();
 
-		logger.error({
-			message: exception.message,
-			err: exceptionResponse,
-			request: response.req
-		});
+		//https://docs.rollbar.com/docs/javascript/#section-server-usage
+		logger.error(exception.message.message, exceptionResponse, response.req);
 
 		response.status(status).json({
 			errors: [exceptionResponse]
