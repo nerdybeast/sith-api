@@ -1,3 +1,6 @@
+//This package is not es6 module friendly, have to import the commonjs way.
+import camelCaseKeys = require('camelcase-keys');
+
 import { UnauthorizedException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { CacheFactory } from '../factories/cache-factory';
 import { ICache } from '../../interfaces/ICache';
@@ -11,9 +14,6 @@ import { SobjectDescribeBase } from '../../models/salesforce-metadata/SobjectDes
 import { CrudAction } from '../../models/enums/crud-action';
 import * as camelCase from 'lodash.camelcase';
 import { Connection } from '../../models/Connection';
-
-//This package is not es6 module friendly, have to import the commonjs way.
-import camelCaseKeys = require('camelcase-keys');
 import { JsforceError } from '../../models/JsforceError';
 import { ErrorCode } from '../../models/enums/error-code';
 

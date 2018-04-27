@@ -5,12 +5,13 @@ import * as bodyParser from 'body-parser';
 import { ApplicationModule } from './modules/app-module';
 import { JsonApiInterceptor } from './components/interceptors/json-api-interceptor';
 import { Debug } from './utilities/debug';
-import { GlobalExceptionFilter } from './components/filters/GlobalExceptionFilter';
+import { GlobalHttpExceptionFilter } from './components/filters/GlobalHttpExceptionFilter';
+import { GlobalAnyExceptionFilter } from './components/filters/GlobalAnyExceptionFilter';
 
 (async function bootstrap() {
 	const app = await NestFactory.create(ApplicationModule);
 	app.useGlobalInterceptors(new JsonApiInterceptor());
-	app.useGlobalFilters(new GlobalExceptionFilter());
+	app.useGlobalFilters(new GlobalHttpExceptionFilter(), new GlobalAnyExceptionFilter());
 	app.use(morgan('dev'));
 	app.use(cors());
 	
