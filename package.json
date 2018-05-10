@@ -58,6 +58,7 @@
     "@types/got": "^7.1.8",
     "@types/jest": "^22.2.3",
     "@types/jsonwebtoken": "^7.2.6",
+    "@types/lodash.camelcase": "^4.3.3",
     "@types/morgan": "^1.7.35",
     "@types/redis": "^2.8.6",
     "@types/supertest": "^2.0.4",
