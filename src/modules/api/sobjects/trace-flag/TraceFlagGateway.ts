@@ -1,6 +1,6 @@
 import { fork, ChildProcess } from 'child_process';
 import { join } from 'path';
-import { WebSocketGateway, NestGateway, SubscribeMessage, WebSocketServer, OnGatewayInit } from '@nestjs/websockets';
+import { WebSocketGateway, NestGateway, SubscribeMessage, WebSocketServer } from '@nestjs/websockets';
 import { Debug } from '../../../../utilities/debug';
 import { ConnectionDetails } from '../../../../models/ConnectionDetails';
 import { TraceFlagService } from '../../../../components/services/TraceFlagService';
