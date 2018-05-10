@@ -22,5 +22,5 @@ import { GlobalAnyExceptionFilter } from './components/filters/GlobalAnyExceptio
 	await app.listen(port, () => console.log(`\nApi is running on port ${port}...\n`));
 
 	const debug = new Debug('server');
-	debug.verbose('main process id', process.pid);
+	debug.info('main process id', process.pid);
 })();

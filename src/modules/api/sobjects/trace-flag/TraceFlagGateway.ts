@@ -1,6 +1,6 @@
 import { fork, ChildProcess } from 'child_process';
 import { join } from 'path';
-import { WebSocketGateway, NestGateway, SubscribeMessage, WebSocketServer } from '@nestjs/websockets';
+import { WebSocketGateway, NestGateway, SubscribeMessage, WebSocketServer, OnGatewayInit } from '@nestjs/websockets';
 import { Debug } from '../../../../utilities/debug';
 import { ConnectionDetails } from '../../../../models/ConnectionDetails';
 import { TraceFlagService } from '../../../../components/services/TraceFlagService';
@@ -21,13 +21,17 @@ export class TraceFlagGateway implements NestGateway {
 	private socketMap = new Map<string, ConnectionDetails>();
 	private pollingMap = new Map<string, OrgPoller>();
 
+	afterInit(server) {
+		this.debug.info(`trace-flags gateway initialized`);
+	}
+
 	handleConnection(client) {
-		this.debug.verbose(`trace-flags client connected`, client.id);
+		this.debug.info(`trace-flags client connected`, client.id);
 	}
 
 	handleDisconnect(client) {
 		
-		this.debug.verbose(`trace-flags client disconnected`, client.id);
+		this.debug.info(`trace-flags client disconnected`, client.id);
 
 		const connectionDetails = this.socketMap.get(client.id);
 		this.socketMap.delete(client.id);

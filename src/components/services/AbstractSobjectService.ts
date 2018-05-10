@@ -1,7 +1,8 @@
 //This package is not es6 module friendly, have to import the commonjs way.
 import camelCaseKeys = require('camelcase-keys');
+import camelCase = require('lodash.camelcase');
 
-import { UnauthorizedException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import { UnauthorizedException, ForbiddenException, BadRequestException, NotFoundException } from '@nestjs/common';
 import { CacheFactory } from '../factories/cache-factory';
 import { ICache } from '../../interfaces/ICache';
 import { ConnectionDetails } from '../../models/ConnectionDetails';
@@ -12,17 +13,18 @@ import { CrudResult } from '../../models/CrudResult';
 import { GlobalDescribe } from '../../models/salesforce-metadata/GlobalDescribe';
 import { SobjectDescribeBase } from '../../models/salesforce-metadata/SobjectDescribeBase';
 import { CrudAction } from '../../models/enums/crud-action';
-import * as camelCase from 'lodash.camelcase';
 import { Connection } from '../../models/Connection';
 import { JsforceError } from '../../models/JsforceError';
 import { ErrorCode } from '../../models/enums/error-code';
+import { Sobject } from '../../models/sobjects/Sobject';
+import { SearchResult } from '../../models/SearchResult';
 
 export abstract class AbstractSobjectService {
 
 	protected sobjectName: string;
 	protected connectionDetails: ConnectionDetails;
 	protected cache: ICache;
-	private conn: any;
+	protected conn: any;
 	protected debug: Debug;
 
 	constructor(sobjectName: string, connection: Connection) {
@@ -66,9 +68,14 @@ export abstract class AbstractSobjectService {
 		if(fieldNames === '*') fieldNames = await this.getSobjectFieldNames();
 		whereClause = whereClause || '';
 
-		const sobjectMetadata = await this._getSobjectMetadata(this.sobjectName);
+		const sobjectMetadata = await this._describeSobjectBase(this.sobjectName);
 		const soql = `SELECT ${fieldNames} FROM ${this.sobjectName} ${whereClause}`;
 		return await this._query(soql, sobjectMetadata.isTooling);
+	}
+
+	public async search(sosl: string) : Promise<Sobject[]> {
+		const result = await this._search(sosl.replace('-', `\\-`));
+		return result.searchRecords;
 	}
 
 	public async create(data: any) : Promise<CrudResult>;
@@ -103,10 +110,10 @@ export abstract class AbstractSobjectService {
 
 		try {
 			
-			const sobjectMetadata = await this._getSobjectMetadata(this.sobjectName);
+			const sobjectBaseMetadata = await this._describeSobjectBase(this.sobjectName);
 			let result: any = null;
 
-			if(sobjectMetadata.isTooling) {
+			if(sobjectBaseMetadata.isTooling) {
 				result = await this.conn.tooling.sobject(this.sobjectName)[action](data);
 			} else {
 				result = await this.conn.sobject(this.sobjectName)[action](data);
@@ -123,7 +130,6 @@ export abstract class AbstractSobjectService {
 			this.debug.error(`error`, error);
 
 			const ex: JsforceError = error;
-
 			this.handleJsforceError(ex);
 		}
 	}
@@ -137,7 +143,7 @@ export abstract class AbstractSobjectService {
 		try {
 
 			let queryResult = await (isToolingQuery ? this.conn.tooling.query(soql) : this.conn.query(soql));
-			this.debug.info(`Raw query result`, queryResult);
+			this.debug.verbose(`Raw query result`, queryResult);
 
 			//1. To help be json api compliant
 			//2. Some data from Salesforce comes back as camelCase, other is PascalCased, don't want to have to
@@ -149,45 +155,73 @@ export abstract class AbstractSobjectService {
 		} catch (error) {
 
 			this.debug.error(`_query() error`, error);
-
 			const ex: JsforceError = error;
-
 			this.handleJsforceError(ex);
 		}
 	}
 
-	private async _getSobjectMetadata(sobjectName: string) : Promise<SobjectDescribeBase> {
+	private async _search(sosl: string, isTooling: boolean = false) : Promise<SearchResult> {
+
+		this.debug.verbose(`_search() parameters:`);
+		this.debug.verbose(`sosl`, sosl);
+		this.debug.verbose(`isTooling`, isTooling);
+
+		try {
+
+			let searchResult = await (isTooling ? this.conn.tooling.search(sosl) : this.conn.search(sosl));
+			this.debug.verbose(`Raw search result`, searchResult);
+
+			searchResult = camelCaseKeys(searchResult, { deep: true });
+
+			return searchResult as SearchResult;
+
+		} catch (error) {
+
+			this.debug.error(`_search() error`, error);
+			const ex: JsforceError = error;
+			this.handleJsforceError(ex);
+		}
+	}
+
+	private async _describeSobjectBase(sobjectName: string) : Promise<SobjectDescribeBase> {
 		const allSobjects = await this._globalDescribe(this.connectionDetails.organizationId);
 		return allSobjects.find(sobject => sobject.name === sobjectName);
 	}
 
-	private async _describeSobject(sobjectName: string, organizationId: string) : Promise<SobjectDescribe> {
+	protected async _describeSobject(sobjectName: string, organizationId: string) : Promise<SobjectDescribe> {
 
 		try {
 			
 			const globalDescribe = await this._globalDescribe(organizationId);
 			const sobject = globalDescribe.find(x => x.name === sobjectName);
 
+			const cacheKey = `SOBJECT_DESCRIBE_BY_ORG:${organizationId}:${sobjectName}`;
+			const cachedValue = await this.cache.get(cacheKey) as SobjectDescribe;
+
+			if(cachedValue) return cachedValue;
+
 			const sobjectDescription = await (sobject.isTooling ? this.conn.tooling.describe(sobjectName) : this.conn.describe(sobjectName));
+
+			//Cache for 12 hours
+			await this.cache.set(cacheKey, sobjectDescription, (60 * 60 * 12));
+
 			return sobjectDescription as SobjectDescribe;
 
 		} catch (error) {
 
 			this.debug.error(`_describeSobject() error`, error);
-
 			const ex: JsforceError = error;
-
 			this.handleJsforceError(ex);
 		}
 	}
 
-	private async _globalDescribe(organizationId: string) : Promise<SobjectDescribeBase[]> {
+	protected async _globalDescribe(organizationId: string) : Promise<SobjectDescribeBase[]> {
 		try {
 		
 			this.debug.verbose(`_globalDescribe() param: organizationId`, organizationId);
 
-			const cacheKey = `GLOBAL_SOBJECT_DESCRIBE_BY_ORG:${organizationId}`;
-			const cachedValue = await this.cache.get(cacheKey) as any[];
+			const cacheKey = `GLOBAL_DESCRIBE_BY_ORG:${organizationId}`;
+			const cachedValue = await this.cache.get(cacheKey) as SobjectDescribeBase[];
 
 			if(cachedValue) return cachedValue;
 
@@ -196,19 +230,8 @@ export abstract class AbstractSobjectService {
 				this.conn.tooling.describeGlobal() as GlobalDescribe
 			]);
 
-			standardSobjectDescribe.sobjects.forEach(sobject => {
-				sobject.isTooling = true;
-			});
-
-			toolingSobjectDescribe.sobjects.forEach(sobject => {
-
-				//A true tooling object is one that exists in the list of tooling sobjects but NOT in the list of standard sobjects.
-				//Some sobjects exist in both lists which in that case, they are considered standard sobjects.
-				const standardSobjectMatch = standardSobjectDescribe.sobjects.find(x => x.name === sobject.name);
-				const isTooling = standardSobjectMatch === undefined;
-
-				sobject.isTooling = isTooling;
-			});
+			standardSobjectDescribe.sobjects.forEach(sobject => sobject.isTooling = false);
+			toolingSobjectDescribe.sobjects.forEach(sobject => sobject.isTooling = true);
 
 			const allSobjects = [...standardSobjectDescribe.sobjects, ...toolingSobjectDescribe.sobjects];
 
@@ -220,9 +243,7 @@ export abstract class AbstractSobjectService {
 		} catch (error) {
 
 			this.debug.error(`_globalDescribe() error`, error);
-
 			const ex: JsforceError = error;
-
 			this.handleJsforceError(ex);
 		}
 	}
@@ -230,6 +251,7 @@ export abstract class AbstractSobjectService {
 	private handleJsforceError(ex: JsforceError) : void {
 		if(ex.errorCode === ErrorCode.INVALID_SESSION_ID) throw new UnauthorizedException(ex.message);
 		if(ex.errorCode === ErrorCode.REQUEST_LIMIT_EXCEEDED) throw new ForbiddenException(ex.message);
+		if(ex.errorCode === ErrorCode.NOT_FOUND) throw new NotFoundException(ex.message);
 		throw new BadRequestException(ex.message);
 	}
 }

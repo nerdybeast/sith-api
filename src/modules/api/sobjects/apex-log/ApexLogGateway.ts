@@ -25,11 +25,17 @@ export class ApexLogGateway implements NestGateway {
 	 */
 	private pollingMap = new Map<string, UserPoller>();
 
+	afterInit(server) {
+		this.debug.info(`apex-logs gateway initialized`);
+	}
+
 	handleConnection(client) {
-		this.debug.verbose(`apex-logs client connected`, client.id);
+		this.debug.info(`apex-logs client connected`, client.id);
 	}
 
 	handleDisconnect(client) {
+
+		this.debug.info(`apex-logs client disconnected`, client.id);
 
 		const connectionDetails = this.socketMap.get(client.id);
 		this.socketMap.delete(client.id);

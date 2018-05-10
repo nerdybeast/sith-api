@@ -15,9 +15,9 @@ export class CacheFactory {
 		//TODO: decide to return redis cache or not...
 		if(!this.cacheInstance) {
 			this.cacheInstance = new MemoryCache();
-			debug.info(`new cache instance created`);
+			debug.verbose(`new cache instance created`);
 		} else {
-			debug.info(`same cache instance used`);
+			debug.verbose(`same cache instance used`);
 		}
 
 		return this.cacheInstance;
