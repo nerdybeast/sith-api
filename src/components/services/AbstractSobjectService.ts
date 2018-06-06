@@ -10,7 +10,6 @@ import { QueryResult } from '../../models/query-result';
 import { SobjectDescribe } from '../../models/salesforce-metadata/SobjectDescribe';
 import { Debug } from '../../utilities/debug';
 import { CrudResult } from '../../models/CrudResult';
-import { GlobalDescribe } from '../../models/salesforce-metadata/GlobalDescribe';
 import { SobjectDescribeBase } from '../../models/salesforce-metadata/SobjectDescribeBase';
 import { CrudAction } from '../../models/enums/crud-action';
 import { Connection } from '../../models/Connection';
@@ -18,8 +17,10 @@ import { JsforceError } from '../../models/JsforceError';
 import { ErrorCode } from '../../models/enums/error-code';
 import { Sobject } from '../../models/sobjects/Sobject';
 import { SearchResult } from '../../models/SearchResult';
+import { SalesforceService } from './SalesforceService';
+import { ApiType } from '../../models/enums/ApiType';
 
-export abstract class AbstractSobjectService {
+export abstract class AbstractSobjectService extends SalesforceService {
 
 	protected sobjectName: string;
 	protected connectionDetails: ConnectionDetails;
@@ -28,6 +29,8 @@ export abstract class AbstractSobjectService {
 	protected debug: Debug;
 
 	constructor(sobjectName: string, connection: Connection) {
+
+		super(connection);
 
 		this.sobjectName = sobjectName;
 		this.connectionDetails = connection.details;
@@ -109,16 +112,12 @@ export abstract class AbstractSobjectService {
 	private async _performCrudAction<T>(data: any, action: CrudAction) : Promise<T> {
 
 		try {
-			
-			const sobjectBaseMetadata = await this._describeSobjectBase(this.sobjectName);
-			let result: any = null;
 
-			if(sobjectBaseMetadata.isTooling) {
-				result = await this.conn.tooling.sobject(this.sobjectName)[action](data);
-			} else {
-				result = await this.conn.sobject(this.sobjectName)[action](data);
-			}
-			
+			const sobjectBaseMetadata = await this._describeSobjectBase(this.sobjectName);
+
+			const apiType = sobjectBaseMetadata.isTooling ? ApiType.TOOLING : ApiType.STANDARD;
+			let result = await this.sobjectCrudOperation(apiType, this.sobjectName, action, data);
+
 			result = camelCaseKeys(result, { deep: true });
 
 			return result as T;
@@ -142,7 +141,8 @@ export abstract class AbstractSobjectService {
 
 		try {
 
-			let queryResult = await (isToolingQuery ? this.conn.tooling.query(soql) : this.conn.query(soql));
+			//let queryResult = await (isToolingQuery ? this.conn.tooling.query(soql) : this.conn.query(soql));
+			let queryResult = await (isToolingQuery ? this.toolingQuery(soql) : this.standardQuery(soql));
 			this.debug.verbose(`Raw query result`, queryResult);
 
 			//1. To help be json api compliant
@@ -168,12 +168,14 @@ export abstract class AbstractSobjectService {
 
 		try {
 
-			let searchResult = await (isTooling ? this.conn.tooling.search(sosl) : this.conn.search(sosl));
+			//let searchResult = await (isTooling ? this.conn.tooling.search(sosl) : this.conn.search(sosl));
+			let searchResult: SearchResult = await (isTooling ? this.toolingSearch(sosl) : this.standardSearch(sosl));
 			this.debug.verbose(`Raw search result`, searchResult);
 
 			searchResult = camelCaseKeys(searchResult, { deep: true });
 
-			return searchResult as SearchResult;
+			//return searchResult as SearchResult;
+			return searchResult;
 
 		} catch (error) {
 
@@ -194,6 +196,10 @@ export abstract class AbstractSobjectService {
 			
 			const globalDescribe = await this._globalDescribe(organizationId);
 			const sobject = globalDescribe.find(x => x.name === sobjectName);
+
+			if(!sobject) {
+				throw new JsforceError(ErrorCode.NOT_FOUND, `The sobject "${sobjectName}" was not found in the current Salesforce org (${organizationId}).`);
+			}
 
 			const cacheKey = `SOBJECT_DESCRIBE_BY_ORG:${organizationId}:${sobjectName}`;
 			const cachedValue = await this.cache.get(cacheKey) as SobjectDescribe;
@@ -225,9 +231,13 @@ export abstract class AbstractSobjectService {
 
 			if(cachedValue) return cachedValue;
 
+			// const [ standardSobjectDescribe, toolingSobjectDescribe ] = await Promise.all([
+			// 	this.conn.describeGlobal() as GlobalDescribe,
+			// 	this.conn.tooling.describeGlobal() as GlobalDescribe
+			// ]);
 			const [ standardSobjectDescribe, toolingSobjectDescribe ] = await Promise.all([
-				this.conn.describeGlobal() as GlobalDescribe,
-				this.conn.tooling.describeGlobal() as GlobalDescribe
+				this.standardGlobalDescribe(),
+				this.toolingGlobalDescribe()
 			]);
 
 			standardSobjectDescribe.sobjects.forEach(sobject => sobject.isTooling = false);

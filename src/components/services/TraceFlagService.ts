@@ -7,7 +7,7 @@ import { Connection } from '../../models/Connection';
 
 export class TraceFlagService extends AbstractSobjectService {
 
-	constructor(private connection: Connection) {
+	constructor(protected connection: Connection) {
 		super('TraceFlag', connection);
 	}
 
