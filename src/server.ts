@@ -7,11 +7,12 @@ import { JsonApiInterceptor } from './components/interceptors/json-api-intercept
 import { Debug } from './utilities/debug';
 import { GlobalHttpExceptionFilter } from './components/filters/GlobalHttpExceptionFilter';
 import { GlobalAnyExceptionFilter } from './components/filters/GlobalAnyExceptionFilter';
+import { NotFoundExceptionFilter } from './components/filters/NotFoundExceptionFilter';
 
 (async function bootstrap() {
 	const app = await NestFactory.create(ApplicationModule);
 	app.useGlobalInterceptors(new JsonApiInterceptor());
-	app.useGlobalFilters(new GlobalHttpExceptionFilter(), new GlobalAnyExceptionFilter());
+	app.useGlobalFilters(new NotFoundExceptionFilter(), new GlobalHttpExceptionFilter(), new GlobalAnyExceptionFilter());
 	app.use(morgan('dev'));
 	app.use(cors());
 	

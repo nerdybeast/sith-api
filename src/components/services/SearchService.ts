@@ -8,6 +8,7 @@ import { GenericSobjectService } from './GenericSobjectService';
 import { NotFoundException } from '@nestjs/common';
 import { SobjectDescribeBase } from '../../models/salesforce-metadata/SobjectDescribeBase';
 import { SearchResultDto } from '../../models/dto/SearchResultDto';
+import { escapeSpecialCharacters } from '../../utilities/sanitize';
 
 export class SearchService {
 
@@ -33,7 +34,9 @@ export class SearchService {
 		} else {
 
 			const temp = new GenericSobjectService('', this.connection);
-			const soslResults: Sobject[] = await temp.search(`FIND {*${identifier}*} IN NAME FIELDS LIMIT 10`);
+			const escapedIdentifier = escapeSpecialCharacters(identifier);
+
+			const soslResults: Sobject[] = await temp.search(`FIND {*${escapedIdentifier}*} IN NAME FIELDS LIMIT 10`);
 
 			if(soslResults.length === 0) {
 				throw new NotFoundException(`No records were found for the identifier "${identifier}".`);

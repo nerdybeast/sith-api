@@ -74,7 +74,7 @@ export abstract class AbstractSobjectService {
 	}
 
 	public async search(sosl: string) : Promise<Sobject[]> {
-		const result = await this._search(sosl.replace('-', `\\-`));
+		const result = await this._search(sosl);
 		return result.searchRecords;
 	}
 

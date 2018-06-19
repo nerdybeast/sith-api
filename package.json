@@ -10,13 +10,14 @@
   "main": "./dist/server.js",
   "scripts": {
     "start": "node dist/server.js",
-    "test": "npm run lint:ts & jest",
+    "test": "npm run lint:ts & npm run jest",
     "dev": "nodemon",
     "debug": "ts-node --inspect=5858 index.ts",
     "build": "tsc",
     "prod": "tsc && node dist/server.js",
     "postinstall": "npm run build",
-    "lint:ts": "tsc & tslint ./src/**/*.ts"
+    "lint:ts": "tsc & tslint ./src/**/*.ts",
+    "jest": "jest"
   },
   "engines": {
     "node": "8.9.x",
