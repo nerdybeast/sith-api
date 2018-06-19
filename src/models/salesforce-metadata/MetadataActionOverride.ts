@@ -11,10 +11,7 @@ export class MetadataActionOverride {
 	public skipRecordTypeSelect: boolean;
 	public type: ActionOverrideType;
 
-	constructor(rawJson?: any) {
-
-		if(!rawJson) rawJson = {};
-
+	constructor(rawJson: any = {}) {
 		this.actionName = rawJson.actionName || null;
 		this.comment = rawJson.comment || null;
 		this.content = rawJson.content || null;

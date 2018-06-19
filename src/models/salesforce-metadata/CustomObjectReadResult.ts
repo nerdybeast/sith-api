@@ -20,7 +20,7 @@ import { ValidationRule } from './ValidationRule';
 import { SetupObjectVisibility } from '../enums/SetupObjectVisibility';
 import { WebLink } from './WebLink';
 import { MetadataActionOverride } from './MetadataActionOverride';
-import { toBoolean } from '../../utilities/Cast';
+import { toBoolean, toArray } from '../../utilities/Cast';
 
 export class CustomObjectReadResult extends Metadata {
 	public actionOverrides: MetadataActionOverride[];
@@ -72,14 +72,57 @@ export class CustomObjectReadResult extends Metadata {
 	public visibility: SetupObjectVisibility;
 	public webLinks: WebLink[];
 
-	constructor(rawJson: any = {}) {
+	constructor(json: any = {}) {
 
-		super(rawJson);
+		super(json);
 
-		this.actionOverrides = (rawJson.actionOverrides || []).map(x => new MetadataActionOverride(x));
-		this.allowInChatterGroups = toBoolean(rawJson.allowInChatterGroups);
-		this.businessProcesses = (rawJson.businessProcesses || []).map(x => new BusinessProcess(x));
-
-		this.fields = (rawJson.fields || []).map(x => new CustomField(x));
+		this.actionOverrides = toArray(json.actionOverrides).map(x => new MetadataActionOverride(x));
+		this.allowInChatterGroups = toBoolean(json.allowInChatterGroups);
+		this.businessProcesses = toArray(json.businessProcesses).map(x => new BusinessProcess(x));
+		this.compactLayoutAssignment = json.compactLayoutAssignment || null;
+		this.compactLayouts = toArray(json.compactLayouts).map(x => new CompactLayout(x));
+		this.customHelp = json.customHelp || null;
+		this.customHelpPage = json.customHelpPage || null;
+		this.deploymentStatus = json.deploymentStatus || null;
+		this.deprecated = toBoolean(json.deprecated);
+		this.description = json.description || null;
+		this.enableActivities = toBoolean(json.enableActivities);
+		this.enableBulkApi = toBoolean(json.enableBulkApi);
+		this.enableChangeDataCapture = toBoolean(json.enableChangeDataCapture);
+		this.enableDivisions = toBoolean(json.enableDivisions);
+		this.enableEnhancedLookup = toBoolean(json.enableEnhancedLookup);
+		this.enableFeeds = toBoolean(json.enableFeeds);
+		this.enableHistory = toBoolean(json.enableHistory);
+		this.enableReports = toBoolean(json.enableReports);
+		this.enableSearch = toBoolean(json.enableSearch);
+		this.enableSharing = toBoolean(json.enableSharing);
+		this.enableStreamingApi = toBoolean(json.enableStreamingApi);
+		this.eventType = json.eventType || null;
+		this.externalDataSource = json.externalDataSource || null;
+		this.externalName = json.externalName || null;
+		this.externalRepository = json.externalRepository || null;
+		this.externalSharingModel = json.externalSharingModel || null;
+		this.fields = toArray(json.fields).map(x => new CustomField(x));
+		this.fieldSets = new FieldSet(json.fieldSets);
+		this.gender = json.gender || null;
+		this.household = toBoolean(json.household);
+		this.historyRetentionPolicy = new HistoryRetentionPolicy(json.historyRetentionPolicy);
+		this.indexes = toArray(json.indexes).map(x => new Index(x));
+		this.label = json.label = json.label || null;
+		this.listViews = toArray(json.listViews).map(x => new ListView(x));
+		// this.namedFilter = json.xxx
+		// this.nameField = json.xxx
+		// this.pluralLabel = json.xxx
+		// this.recordTypes = json.xxx
+		// this.recordTypeTrackFeedHistory = json.xxx
+		// this.recordTypeTrackHistory = json.xxx
+		// this.searchLayouts = json.xxx
+		// this.sharingModel = json.xxx
+		// this.sharingReasons = json.xxx
+		// this.sharingRecalculations = json.xxx
+		// this.startsWith = json.xxx
+		// this.validationRules = json.xxx
+		// this.visibility = json.xxx
+		// this.webLinks = json.xxx
 	}
 }

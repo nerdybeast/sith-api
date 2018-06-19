@@ -2,13 +2,15 @@ import { ResourceObject } from '../../models/JsonApiDocument';
 
 export class JsonApiService {
 
-	serialize<T>(type: string, data: any, idProperty: string = 'id') : ResourceObject<T> {
+	public static serialize<T>(type: string, data: any, idProperty: string = 'id') : ResourceObject<T> {
 
-		const resource = new ResourceObject<T>(data[idProperty], type);
+		const dataCopy = Object.assign({}, data);
 
-		delete data[idProperty];
+		const resource = new ResourceObject<T>(dataCopy[idProperty], type);
 
-		resource.attributes = data;
+		if(idProperty === 'id') delete dataCopy[idProperty];
+
+		resource.attributes = dataCopy;
 		return resource;
 	}
 

@@ -5,7 +5,7 @@ import { SummaryOperations } from '../enums/SummaryOperations';
 import { LookupFilter } from './LookupFilter';
 import { FilterItem } from './FilterItem';
 import { FieldType } from '../enums/FieldType';
-import { toBoolean, toNumber } from '../../utilities/Cast';
+import { toBoolean, toNumber, toArray } from '../../utilities/Cast';
 
 /**
  * https://developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/customfield.htm
@@ -126,7 +126,7 @@ export class CustomField extends Metadata {
 		this.startingNumber = toNumber(json.startingNumber);
 		this.stripMarkup = toBoolean(json.stripMarkup);
 		this.summarizedField = json.summarizedField = null;
-		this.summaryFilterItems = (json.summaryFilterItems || []).map(x => new FilterItem(x));
+		this.summaryFilterItems = toArray(json.summaryFilterItems).map(x => new FilterItem(x));
 		this.summaryForeignKey = json.summaryForeignKey || null;
 		this.summaryOperation = json.summaryOperation || null;
 		this.trackFeedHistory = toBoolean(json.trackFeedHistory);

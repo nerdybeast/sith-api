@@ -13,6 +13,7 @@
     "test": "npm run lint:ts & jest",
     "dev": "nodemon",
     "debug": "ts-node --inspect=5858 index.ts",
+    "server": "tsc --watch && nodemon --inspect ./dist/server.js --watch dist",
     "build": "tsc",
     "prod": "tsc && node dist/server.js",
     "postinstall": "npm run build",

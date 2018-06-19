@@ -1,6 +1,5 @@
 import { FilterItem } from './FilterItem';
-import { toBoolean } from '../../utilities/Cast';
-import { isArray } from 'util';
+import { toBoolean, toArray } from '../../utilities/Cast';
 
 export class LookupFilter {
 	public active: boolean;
@@ -16,15 +15,7 @@ export class LookupFilter {
 		this.booleanFilter = json.booleanFilter || null;
 		this.description = json.description || null;
 		this.errorMessage = json.errorMessage || null;
-
-		json.filterItems = json.filterItems || [];
-
-		if(!isArray(json.filterItems)) {
-			json.filterItems = [json.filterItems];
-		}
-
-		this.filterItems = json.filterItems.map(x => new FilterItem(x));
-		
+		this.filterItems = toArray(json.filterItems).map(x => new FilterItem(x));
 		this.infoMessage = json.infoMessage || null;
 		this.isOptional = toBoolean(json.isOptional);
 	}

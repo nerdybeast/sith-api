@@ -19,6 +19,8 @@ let updateCrudResult: CrudResult;
 let updateErrorResult: JsforceError;
 let deleteCrudResult: CrudResult;
 let deleteErrorResult: JsforceError;
+let metadataReadResult: any;
+let metadataReadError: JsforceError;
 
 const sobject = new Sobject();
 sobject.id = '1q2w3e4r5t6y7u8i9o';
@@ -68,12 +70,18 @@ jsforce.__setDeleteResult = (mockDeleteResult?: CrudResult, error?: JsforceError
 	deleteErrorResult = error;
 };
 
+jsforce.__setMetadataReadResult = (mockMetadataReadResult?: any, error?: JsforceError) => {
+	metadataReadResult = mockMetadataReadResult;
+	metadataReadError = error;
+};
+
 jsforce.__reset = function() {
 	this.__setQueryResult(generateDefaultQueryResult([sobject]));
 	this.__setCreateResult(undefined, undefined);
 	this.__setRetrieveResult(undefined, undefined);
 	this.__setUpdateResult(undefined, undefined);
 	this.__setDeleteResult(undefined, undefined);
+	this.__setMetadataReadResult(undefined, undefined);
 };
 
 const conn = {
@@ -147,10 +155,17 @@ const conn = {
 				}
 			};
 		}
+	},
+
+	metadata: {
+		read() {
+			if(metadataReadError) return Promise.reject(metadataReadError);
+			return Promise.resolve(metadataReadResult);
+		}
 	}
 };
 
-jsforce.Connection = () => {
+jsforce.Connection = function() {
 	return conn;
 };
 
