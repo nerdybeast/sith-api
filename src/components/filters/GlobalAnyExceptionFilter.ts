@@ -9,7 +9,7 @@ export class GlobalAnyExceptionFilter implements ExceptionFilter {
 
 	catch(exception: Error, response) {
 
-		logger.error(exception.message, exception, response.req);
+		logger.critical(exception.message, exception, response.req);
 
 		response.status(status).json({
 			errors: [exception]

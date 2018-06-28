@@ -41,8 +41,8 @@ export async function poll(pollingRateInMilliseconds: number) {
 
 	let connection = connections[0];
 
-	let traceFlagService = new TraceFlagService(new Connection(connection));
 	let debugLevelService = new DebugLevelService(new Connection(connection));
+	let traceFlagService = new TraceFlagService(new Connection(connection), debugLevelService);
 
 	let [traceFlagFieldNames, debugLevelFieldNames] = await Promise.all([
 		traceFlagService.getSobjectFieldNames(),

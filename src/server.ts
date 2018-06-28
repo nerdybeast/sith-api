@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
-import * as cors from 'cors';
-import * as morgan from 'morgan';
-import * as bodyParser from 'body-parser';
+import cors from 'cors';
+import morgan from 'morgan';
+import bodyParser from 'body-parser';
 import { ApplicationModule } from './modules/app-module';
 import { JsonApiInterceptor } from './components/interceptors/json-api-interceptor';
 import { Debug } from './utilities/debug';

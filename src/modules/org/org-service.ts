@@ -1,6 +1,6 @@
 import { Component } from '@nestjs/common';
 import { OrgVersion } from '../../models/org-version';
-import * as got from 'got';
+import got from 'got';
 
 @Component()
 export class OrgService {

@@ -1,6 +1,6 @@
-import * as express from 'express';
-import * as request from 'supertest';
-import * as jwt from 'jsonwebtoken';
+import express from 'express';
+import request from 'supertest';
+import jwt from 'jsonwebtoken';
 import { Test } from '@nestjs/testing';
 import { ApplicationModule } from '../app-module';
 import { ClientCredentials } from '../../models/client-credentials';

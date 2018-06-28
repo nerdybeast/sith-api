@@ -1,4 +1,4 @@
-//This package is not es6 module friendly, have to import the commonjs way.
+//These packages are not es6 module friendly, have to import the commonjs way.
 import camelCaseKeys = require('camelcase-keys');
 import camelCase = require('lodash.camelcase');
 
@@ -64,7 +64,7 @@ export abstract class AbstractSobjectService {
 	}
 
 	public async query(fieldNames: string[] | string, whereClause?: string) : Promise<QueryResult> {
-		
+
 		if(fieldNames === '*') fieldNames = await this.getSobjectFieldNames();
 		whereClause = whereClause || '';
 
@@ -108,6 +108,8 @@ export abstract class AbstractSobjectService {
 
 	private async _performCrudAction<T>(data: any, action: CrudAction) : Promise<T> {
 
+		this.debug.verbose(`_performCrudAction() parameters:`, { data, action });
+
 		try {
 			
 			const sobjectBaseMetadata = await this._describeSobjectBase(this.sobjectName);
@@ -125,9 +127,7 @@ export abstract class AbstractSobjectService {
 
 		} catch (error) {
 
-			this.debug.error(`${action} failed for ${this.sobjectName}`);
-			this.debug.error(`data`, data);
-			this.debug.error(`error`, error);
+			this.debug.error(`${action} failed for ${this.sobjectName}`, { data, error });
 
 			const ex: JsforceError = error;
 			this.handleJsforceError(ex);
@@ -135,10 +135,8 @@ export abstract class AbstractSobjectService {
 	}
 
 	private async _query(soql: string, isToolingQuery: boolean = false) : Promise<QueryResult> {
-		
-		this.debug.verbose(`_query() parameters:`);
-		this.debug.verbose(`soql`, soql);
-		this.debug.verbose(`isToolingQuery`, isToolingQuery);
+
+		this.debug.verbose(`_query() parameters:`, { soql, isToolingQuery });
 
 		try {
 
@@ -162,9 +160,7 @@ export abstract class AbstractSobjectService {
 
 	private async _search(sosl: string, isTooling: boolean = false) : Promise<SearchResult> {
 
-		this.debug.verbose(`_search() parameters:`);
-		this.debug.verbose(`sosl`, sosl);
-		this.debug.verbose(`isTooling`, isTooling);
+		this.debug.verbose(`_search() parameters:`, { sosl, isTooling });
 
 		try {
 
@@ -189,6 +185,8 @@ export abstract class AbstractSobjectService {
 	}
 
 	protected async _describeSobject(sobjectName: string, organizationId: string) : Promise<SobjectDescribe> {
+
+		this.debug.verbose(`_describeSobject() parameters:`, { sobjectName, organizationId });
 
 		try {
 			
@@ -216,9 +214,10 @@ export abstract class AbstractSobjectService {
 	}
 
 	protected async _globalDescribe(organizationId: string) : Promise<SobjectDescribeBase[]> {
+
+		this.debug.verbose(`_globalDescribe() parameters:`, { organizationId });
+
 		try {
-		
-			this.debug.verbose(`_globalDescribe() param: organizationId`, organizationId);
 
 			const cacheKey = `GLOBAL_DESCRIBE_BY_ORG:${organizationId}`;
 			const cachedValue = await this.cache.get(cacheKey) as SobjectDescribeBase[];

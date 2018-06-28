@@ -7,8 +7,11 @@ import { Connection } from '../../models/Connection';
 
 export class TraceFlagService extends AbstractSobjectService {
 
-	constructor(private connection: Connection) {
+	private readonly _debugLevelService: DebugLevelService;
+
+	constructor(connection: Connection, debugLevelService: DebugLevelService) {
 		super('TraceFlag', connection);
+		this._debugLevelService = debugLevelService;
 	}
 
 	public async retrieve(ids: string) : Promise<TraceFlag>;
@@ -19,10 +22,8 @@ export class TraceFlagService extends AbstractSobjectService {
 	}
 
 	public async getTraceFlags(userId: string, fieldsToQuery?: string[], debugLevelFieldsToQuery?: string[]) : Promise<TraceFlag[]> {
-		
-		this.debug.verbose('getTraceFlags() parameters:');
-		this.debug.verbose('userId', userId);
-		this.debug.verbose('fieldsToQuery', fieldsToQuery);
+
+		this.debug.verbose('getTraceFlags() parameters:', { userId, fieldsToQuery });
 
 		fieldsToQuery = fieldsToQuery || await this.getSobjectFieldNames();
 		const traceFlagQueryResult = await this.query(fieldsToQuery, `Where TracedEntityId = '${userId}' Or CreatedById = '${userId}'`);
@@ -31,8 +32,7 @@ export class TraceFlagService extends AbstractSobjectService {
 		const debugLevelIds = traceFlags.map(x => x.debugLevelId);
 		debugLevelFieldsToQuery = debugLevelFieldsToQuery || await this.getSobjectFieldNames('DebugLevel');
 		
-		const debugLevelService = new DebugLevelService(this.connection);
-		const debugLevels = await debugLevelService.getDebugLevels(debugLevelIds, debugLevelFieldsToQuery);
+		const debugLevels = await this._debugLevelService.getDebugLevels(debugLevelIds, debugLevelFieldsToQuery);
 
 		traceFlags.forEach(tf => {
 			tf.debugLevel = debugLevels.find(dl => dl.id === tf.debugLevelId);
@@ -58,8 +58,7 @@ export class TraceFlagService extends AbstractSobjectService {
 	public async update(traceFlags: TraceFlag[]) : Promise<CrudResult[]>;
 	public async update(traceFlags: any) : Promise<any> {
 
-		this.debug.verbose('updateTraceFlag() parameters:');
-		this.debug.verbose('traceFlags', traceFlags);
+		this.debug.verbose('updateTraceFlag() parameters:', { traceFlags });
 
 		if(Array.isArray(traceFlags)) {
 			traceFlags = traceFlags.map(tf => this.transformForUpdate(tf));

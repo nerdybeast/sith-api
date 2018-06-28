@@ -1,4 +1,4 @@
-import * as Rollbar from 'rollbar';
+import Rollbar from 'rollbar';
 
 const logger = new Rollbar({
 	accessToken: process.env.ROLLBAR_ACCESS_TOKEN,
