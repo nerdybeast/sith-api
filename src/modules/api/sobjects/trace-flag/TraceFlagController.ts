@@ -4,6 +4,7 @@ import * as jsonapi from 'jsonapi-serializer';
 import { TraceFlag } from '../../../../models/sobjects/TraceFlag';
 import { TraceFlagService } from '../../../../components/services/TraceFlagService';
 import { Connection } from '../../../../models/Connection';
+import { DebugLevelService } from '../../../../components/services/DebugLevelService';
 
 @Controller('api/sobjects')
 export class TraceFlagController {
@@ -11,7 +12,8 @@ export class TraceFlagController {
 	@Get('/trace-flags')
 	async traceFlagsAsync(@UserInfo() connection: Connection) {
 
-		const traceFlagService = new TraceFlagService(connection);
+		const debugLevelService = new DebugLevelService(connection);
+		const traceFlagService = new TraceFlagService(connection, debugLevelService);
 		
 		const [ traceFlagFieldNames, debugLevelFieldNames ] = await Promise.all([
 			traceFlagService.getSobjectFieldNames(),
@@ -36,7 +38,8 @@ export class TraceFlagController {
 			});
 		});
 
-		const traceFlagService = new TraceFlagService(connection);
+		const debugLevelService = new DebugLevelService(connection);
+		const traceFlagService = new TraceFlagService(connection, debugLevelService);
 		const result = await traceFlagService.create(newTraceFlag as TraceFlag);
 		
 		const [ traceFlag, fieldNames ] = await Promise.all([
@@ -66,7 +69,8 @@ export class TraceFlagController {
 			});
 		});
 
-		const traceFlagService = new TraceFlagService(connection);
+		const debugLevelService = new DebugLevelService(connection);
+		const traceFlagService = new TraceFlagService(connection, debugLevelService);
 		await traceFlagService.update(traceFlag as TraceFlag);
 
 		const [ updatedTraceFlag, fieldNames ] = await Promise.all([
@@ -85,8 +89,12 @@ export class TraceFlagController {
 	@Delete('/trace-flags/:id')
 	@HttpCode(204) //No content
 	async deleteTraceFlagAsync(@Param() params, @UserInfo() connection: Connection) {
+
 		const traceFlagId = params.id;
-		const traceFlagService = new TraceFlagService(connection);
+
+		const debugLevelService = new DebugLevelService(connection);
+		const traceFlagService = new TraceFlagService(connection, debugLevelService);
+
 		await traceFlagService.delete(traceFlagId);
 	}
 }

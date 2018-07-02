@@ -1,5 +1,5 @@
-import * as express from 'express';
-import * as request from 'supertest';
+import express from 'express';
+import request from 'supertest';
 import { Test } from '@nestjs/testing';
 import { ApplicationModule } from '../../src/modules/app-module';
 
