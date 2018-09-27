@@ -54,8 +54,7 @@ describe('AbstractSobjectService', () => {
 
 	test('Query for invalid field throws an error', async () => {
 
-		const mockError = new JsforceError();
-		mockError.errorCode = ErrorCode.INVALID_FIELD;
+		const mockError = new JsforceError(ErrorCode.INVALID_FIELD, '');
 
 		require('jsforce').__setQueryResult(undefined, mockError);
 
@@ -92,9 +91,7 @@ describe('AbstractSobjectService', () => {
 
 	test('create - catch error', async () => {
 
-		const mockErrorResult = new JsforceError();
-		mockErrorResult.errorCode = 'SOME_SF_ERROR';
-		mockErrorResult.message = 'Hey there was an error :/';
+		const mockErrorResult = new JsforceError(ErrorCode.INVALID_FIELD, 'Hey there was an error :/');
 
 		require('jsforce').__setCreateResult(undefined, mockErrorResult);
 
@@ -120,9 +117,7 @@ describe('AbstractSobjectService', () => {
 
 	test('update - catch error', async () => {
 
-		const mockErrorResult = new JsforceError();
-		mockErrorResult.errorCode = 'SOME_SF_ERROR';
-		mockErrorResult.message = 'Hey there was an error :/';
+		const mockErrorResult = new JsforceError(ErrorCode.INVALID_FIELD, 'Hey there was an error :/');
 
 		require('jsforce').__setUpdateResult(undefined, mockErrorResult);
 
@@ -148,9 +143,7 @@ describe('AbstractSobjectService', () => {
 
 	test('delete - catch error', async () => {
 
-		const mockErrorResult = new JsforceError();
-		mockErrorResult.errorCode = 'SOME_SF_ERROR';
-		mockErrorResult.message = 'Hey there was an error :/';
+		const mockErrorResult = new JsforceError(ErrorCode.INVALID_FIELD, 'Hey there was an error :/');
 
 		require('jsforce').__setDeleteResult(undefined, mockErrorResult);
 

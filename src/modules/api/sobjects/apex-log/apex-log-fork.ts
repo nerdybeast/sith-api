@@ -1,5 +1,5 @@
 import { ConnectionDetails } from '../../../../models/ConnectionDetails';
-import * as isEqual from 'lodash.isequal';
+import isEqual from 'lodash.isequal';
 import { TraceFlagIPC } from '../../../../models/ipc/TraceFlagIPC';
 import { ApexLogService } from '../../../../components/services/ApexLogService';
 import { ApexLog } from '../../../../models/sobjects/ApexLog';

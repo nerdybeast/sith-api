@@ -1,6 +1,5 @@
 {
-	"watch": ["src"],
-	"ext": "ts",
-	"ignore": ["src/**/*.spec.ts"],
-	"exec": "npm run debug"
-}
+	"watch": ["dist"],
+	"ext": "js",
+	"exec": "node --inspect=5959 dist/index.js"
+  }

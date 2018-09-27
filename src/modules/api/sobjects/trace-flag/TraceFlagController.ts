@@ -1,6 +1,6 @@
 import { Controller, Body, Param, Get, Post, Patch, Delete, HttpCode } from '@nestjs/common';
 import { UserInfo } from '../../../../decorators/UserInfoDecorator';
-import * as jsonapi from 'jsonapi-serializer';
+import jsonapi from 'jsonapi-serializer';
 import { TraceFlag } from '../../../../models/sobjects/TraceFlag';
 import { TraceFlagService } from '../../../../components/services/TraceFlagService';
 import { Connection } from '../../../../models/Connection';

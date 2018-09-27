@@ -15,7 +15,7 @@ import { NotFoundExceptionFilter } from './components/filters/NotFoundExceptionF
 	app.useGlobalFilters(new NotFoundExceptionFilter(), new GlobalHttpExceptionFilter(), new GlobalAnyExceptionFilter());
 	app.use(morgan('dev'));
 	app.use(cors());
-	
+
 	//Tell the json body parser to parse all request bodies that contain a Content-Type matching this expression.
 	app.use(bodyParser.json({ type: ['application/json', 'application/vnd.api+json'] }));
 

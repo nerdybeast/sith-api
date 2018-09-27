@@ -11,7 +11,7 @@ export class GlobalAnyExceptionFilter implements ExceptionFilter {
 
 		logger.critical(exception.message, exception, response.req);
 
-		response.status(status).json({
+		response.status(500).json({
 			errors: [exception]
 		});
 	}

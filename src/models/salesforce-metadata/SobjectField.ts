@@ -1,6 +1,9 @@
 import { PicklistValue } from './PicklistValue';
 import { FilteredLookupInfo } from './FilteredLookupInfo';
 
+/**
+ * This is the sobject field description using the standard describe.
+ */
 export class SobjectField {
 	aggregatable: boolean;
 	autoNumber: boolean;
@@ -59,4 +62,62 @@ export class SobjectField {
 	unique: boolean;
 	updateable: boolean;
 	writeRequiresMasterRead: boolean;
+
+	//Extra fields
+	apiDataType: string;
+
+	constructor(sobjectField: any = {}) {
+		this.aggregatable = sobjectField.aggregatable;
+		this.autoNumber = sobjectField.autoNumber;
+		this.byteLength = sobjectField.byteLength;
+		this.calculated = sobjectField.calculated;
+		this.calculatedFormula = sobjectField.calculatedFormula;
+		this.cascadeDelete = sobjectField.cascadeDelete;
+		this.caseSensitive = sobjectField.caseSensitive;
+		this.controllerName = sobjectField.controllerName;
+		this.createable = sobjectField.createable;
+		this.custom = sobjectField.custom;
+		this.defaultValue = sobjectField.defaultValue;
+		this.defaultValueFormula = sobjectField.defaultValueFormula;
+		this.defaultedOnCreate = sobjectField.defaultedOnCreate;
+		this.dependentPicklist = sobjectField.dependentPicklist;
+		this.deprecatedAndHidden = sobjectField.deprecatedAndHidden;
+		this.digits = sobjectField.digits;
+		this.displayLocationInDecimal = sobjectField.displayLocationInDecimal;
+		this.encrypted = sobjectField.encrypted;
+		this.externalId = sobjectField.externalId;
+		this.extraTypeInfo = sobjectField.extraTypeInfo;
+		this.filterable = sobjectField.filterable;
+		this.filteredLookupInfo = sobjectField.filteredLookupInfo;
+		this.groupable = sobjectField.groupable;
+		this.highScaleNumber = sobjectField.highScaleNumber;
+		this.htmlFormatted = sobjectField.htmlFormatted;
+		this.idLookup = sobjectField.idLookup;
+		this.inlineHelpText = sobjectField.inlineHelpText;
+		this.label = sobjectField.label;
+		this.length = sobjectField.length;
+		this.mask = sobjectField.mask;
+		this.maskType = sobjectField.maskType;
+		this.name = sobjectField.name;
+		this.nameField = sobjectField.nameField;
+		this.namePointing = sobjectField.namePointing;
+		this.nillable = sobjectField.nillable;
+		this.permissionable = sobjectField.permissionable;
+		this.picklistValues = sobjectField.picklistValues;
+		this.precision = sobjectField.precision;
+		this.queryByDistance = sobjectField.queryByDistance;
+		this.referenceTargetField = sobjectField.referenceTargetField;
+		this.referenceTo = sobjectField.referenceTo;
+		this.relationshipName = sobjectField.relationshipName;
+		this.relationshipOrder = sobjectField.relationshipOrder;
+		this.restrictedDelete = sobjectField.restrictedDelete;
+		this.restrictedPicklist = sobjectField.restrictedPicklist;
+		this.scale = sobjectField.scale;
+		this.soapType = sobjectField.soapType;
+		this.sortable = sobjectField.sortable;
+		this.type = sobjectField.type;
+		this.unique = sobjectField.unique;
+		this.updateable = sobjectField.updateable;
+		this.writeRequiresMasterRead = sobjectField.writeRequiresMasterRead;
+	}
 }

@@ -1,5 +1,5 @@
 import { ConnectionDetails } from '../models/ConnectionDetails';
-import jsforce from 'jsforce';
+import Jsforce from 'jsforce';
 
 export class Connection {
 	
@@ -10,7 +10,7 @@ export class Connection {
 
 		this.details = details;
 
-		this.jsforce = new jsforce.Connection({
+		this.jsforce = new Jsforce.Connection({
 			accessToken: details.sessionId,
 			instanceUrl: details.instanceUrl
 		});
