@@ -5,6 +5,7 @@ import { Encoding } from '../enums/Encoding';
 import { WebLinkType } from '../enums/WebLinkType';
 import { WebLinkWindowType } from '../enums/WebLinkWindowType';
 import { WebLinkPosition } from '../enums/WebLinkPosition';
+import { toNumber, toBoolean } from '../../utilities/Cast';
 
 export class WebLink extends Metadata {
 	public availability: WebLinkAvailability;
@@ -28,4 +29,31 @@ export class WebLink extends Metadata {
 	public showsStatus: boolean;
 	public url: string;
 	public width: number;
+
+	constructor(json: any = {}) {
+
+		super(json);
+
+		this.availability = json.availability || null;
+		this.description = json.description || null;
+		this.displayType = json.displayType || null;
+		this.encodingKey = json.encodingKey || null;
+		this.hasMenubar = toBoolean(json.hasMenubar);
+		this.hasScrollbars = toBoolean(json.hasScrollbars);
+		this.hasToolbar = toBoolean(json.hasToolbar);
+		this.height = toNumber(json.height);
+		this.isResizable = toBoolean(json.isResizable);
+		this.linkType = json.linkType || null;
+		this.masterLabel = json.masterLabel || null;
+		this.openType = json.openType || null;
+		this.page = json.page || null;
+		this.position = json.position || null;
+		this.protected = toBoolean(json.protected);
+		this.requireRowSelection = toBoolean(json.requireRowSelection);
+		this.scontrol = json.scontrol || null;
+		this.showsLocation = toBoolean(json.showsLocation);
+		this.showsStatus = toBoolean(json.showsStatus);
+		this.url = json.url || null;
+		this.width = toNumber(json.width);
+	}
 }

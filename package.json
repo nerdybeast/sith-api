@@ -11,8 +11,8 @@
   "scripts": {
     "start": "node dist/server.js",
     "test": "npm run lint:ts & npm run jest",
-    "dev": "nodemon",
-    "debug": "ts-node --inspect=5858 index.ts",
+    "tsc": "tsc --watch",
+    "nodemon": "nodemon",
     "server": "tsc --watch && nodemon --inspect ./dist/server.js --watch dist",
     "build": "tsc",
     "prod": "tsc && node dist/server.js",

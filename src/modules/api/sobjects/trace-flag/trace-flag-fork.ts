@@ -1,7 +1,7 @@
 import { TraceFlag } from '../../../../models/sobjects/TraceFlag';
 import { TraceFlagService } from '../../../../components/services/TraceFlagService';
 import { ConnectionDetails } from '../../../../models/ConnectionDetails';
-import * as isEqual from 'lodash.isequal';
+import isEqual from 'lodash.isequal';
 import { TraceFlagIPC } from '../../../../models/ipc/TraceFlagIPC';
 import { DebugLevelService } from '../../../../components/services/DebugLevelService';
 import { UserTraceFlags } from '../../../../models/ipc/UserTraceFlags';

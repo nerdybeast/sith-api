@@ -26,5 +26,9 @@ export enum FieldType {
 	CustomDataType = 'CustomDataType',
 	Html = 'Html',
 	Location = 'Location',
-	Time = 'Time'
+	Time = 'Time',
+
+	//Properties below this line are not part of the official Salesforce docs even though their UI shows these values
+	Address = 'Address',
+	Id = 'Id'
 }

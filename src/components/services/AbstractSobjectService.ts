@@ -19,6 +19,7 @@ import { Sobject } from '../../models/sobjects/Sobject';
 import { SearchResult } from '../../models/SearchResult';
 import { SalesforceService } from './SalesforceService';
 import { ApiType } from '../../models/enums/ApiType';
+import { CacheDurationEnum } from '../../utilities/cache-helpers/CacheDurationEnum';
 
 export abstract class AbstractSobjectService extends SalesforceService {
 
@@ -186,7 +187,7 @@ export abstract class AbstractSobjectService extends SalesforceService {
 		return allSobjects.find(sobject => sobject.name === sobjectName);
 	}
 
-	protected async _describeSobject(sobjectName: string, organizationId: string) : Promise<SobjectDescribe> {
+	protected async _describeSobject(sobjectName: string, organizationId: string, force: boolean = false) : Promise<SobjectDescribe> {
 
 		this.debug.verbose(`_describeSobject() parameters:`, { sobjectName, organizationId });
 
@@ -202,12 +203,11 @@ export abstract class AbstractSobjectService extends SalesforceService {
 			const cacheKey = `SOBJECT_DESCRIBE_BY_ORG:${organizationId}:${sobjectName}`;
 			const cachedValue = await this.cache.get(cacheKey) as SobjectDescribe;
 
-			if(cachedValue) return cachedValue;
+			if(cachedValue && !force) return cachedValue;
 
 			const sobjectDescription = await (sobject.isTooling ? this.conn.tooling.describe(sobjectName) : this.conn.describe(sobjectName));
 
-			//Cache for 12 hours
-			await this.cache.set(cacheKey, sobjectDescription, (60 * 60 * 12));
+			await this.cache.set(cacheKey, sobjectDescription, CacheDurationEnum.HOURS_12);
 
 			return sobjectDescription as SobjectDescribe;
 
@@ -230,10 +230,6 @@ export abstract class AbstractSobjectService extends SalesforceService {
 
 			if(cachedValue) return cachedValue;
 
-			// const [ standardSobjectDescribe, toolingSobjectDescribe ] = await Promise.all([
-			// 	this.conn.describeGlobal() as GlobalDescribe,
-			// 	this.conn.tooling.describeGlobal() as GlobalDescribe
-			// ]);
 			const [ standardSobjectDescribe, toolingSobjectDescribe ] = await Promise.all([
 				this.standardGlobalDescribe(),
 				this.toolingGlobalDescribe()
@@ -244,8 +240,7 @@ export abstract class AbstractSobjectService extends SalesforceService {
 
 			const allSobjects = [...standardSobjectDescribe.sobjects, ...toolingSobjectDescribe.sobjects];
 
-			//Cache for 12 hours
-			await this.cache.set(cacheKey, allSobjects, (60 * 60 * 12));
+			await this.cache.set(cacheKey, allSobjects, CacheDurationEnum.HOURS_12);
 
 			return allSobjects;
 

@@ -51,6 +51,10 @@ export abstract class SalesforceService {
 		throw new Error(`No sobject crud operations allowed for the api type ${apiType}`);
 	}
 
+	protected async listMetadata<T>(type: string) : Promise<T> {
+		return await this.conn.metadata.list({ type });
+	}
+
 	protected async readMetadataByObject<T>(metadataObject: string, metadataTypes: string) : Promise<T>;
 	protected async readMetadataByObject<T>(metadataObject: string, metadataTypes: string[]) : Promise<T[]>;
 	protected async readMetadataByObject<T>(metadataObject: string, metadataTypes: any) : Promise<any> {

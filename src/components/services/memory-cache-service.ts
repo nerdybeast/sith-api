@@ -21,7 +21,7 @@ export class MemoryCache implements ICache {
 				return getMockData(key);
 			}
 
-			return val;
+			return null;
 
 		} catch (error) {
 			this.debug.error(`Error getting the key "${key}" from cache`, error);

@@ -1,15 +1,16 @@
 import { Module, Controller, Get, Param, Query } from '@nestjs/common';
 import { UserInfo } from '../../../decorators/UserInfoDecorator';
 import { ToolingService } from '../../../components/services/ToolingService';
-import * as jsonapi from 'jsonapi-serializer';
-import { fieldNames, SobjectDescribe } from '../../../models/salesforce-metadata/SobjectDescribe';
+import { SobjectDescribe } from '../../../models/salesforce-metadata/SobjectDescribe';
 import { Connection } from '../../../models/Connection';
 import { MetadataService } from '../../../components/services/MetadataService';
 import { JsonApiService } from '../../../components/services/JsonApiService';
 import { JsonApiDocument } from '../../../models/JsonApiDocument';
 import { ActionOverride } from '../../../models/salesforce-metadata/ActionOverride';
 import { MetadataActionOverride } from '../../../models/salesforce-metadata/MetadataActionOverride';
-import { ActionOverrideDto, SobjectDescribeDto, FieldDto } from '../../../models/dto/SobjectDescribeDto';
+import { ActionOverrideDto, SobjectDescribeDto, FieldDto, RecordTypeDto, DisplayTypeEnum } from '../../../models/dto/SobjectDescribeDto';
+import { RecordTypeInfo } from '../../../models/salesforce-metadata/RecordTypeInfo';
+import { RecordType } from '../../../models/salesforce-metadata/RecordType';
 
 @Controller('api/metadata/describe')
 export class DescribeController {
@@ -44,30 +45,56 @@ export class DescribeController {
 		const toolingService = new ToolingService(connection);
 		const metadataService = new MetadataService(connection);
 
+		const customTypes = await metadataService.listCustomObjectTypes();
+		const fileProperties = customTypes.find(x => x.fullName === sobjectName);
+
+		const hasChanged = await metadataService.sobjectHasChanged(sobjectName, fileProperties);
+
 		const [ sobjectDescribe, readResult ] = await Promise.all([
-			toolingService.sobjectDescribe(sobjectName),
-			metadataService.readSobjectMetadata(sobjectName)
+			toolingService.sobjectDescribe(sobjectName, hasChanged),
+			metadataService.readSobjectMetadata(sobjectName, hasChanged)
 		]);
-
-		// readResult.fields.forEach(customField => {
-
-		// 	const sobjectField = sobjectDescribe.fields.find(x => x.name === customField.fullname);
-			
-		// 	if(sobjectField) {
-		// 		sobjectField.inlineHelpText = customField.inlineHelpText;
-		// 	}
-		// });
 
 		const sobjectDescribeDto = new SobjectDescribeDto();
 		sobjectDescribeDto.name = sobjectDescribe.name;
 		sobjectDescribeDto.actionOverrides = combineActionOverrides(sobjectDescribe.actionOverrides, readResult.actionOverrides);
+		sobjectDescribeDto.recordTypes = combineRecordTypes(sobjectDescribe.recordTypeInfos, readResult.recordTypes);
 
 		sobjectDescribeDto.fields = sobjectDescribe.fields.map(sobjectField => {
+
 			const metaField = readResult.fields.find(x => x.fullName === sobjectField.name);
-			return new FieldDto(sobjectField, metaField);
+			const fieldDto = new FieldDto(sobjectField, metaField);
+
+			switch(fieldDto.type) {
+				case DisplayTypeEnum.CURRENCY:
+					fieldDto.apiDataType = 'decimal';
+					break;
+				case DisplayTypeEnum.PERCENT:
+					fieldDto.apiDataType = DisplayTypeEnum.DOUBLE;
+					break;
+				case DisplayTypeEnum.TEXT_AREA:
+				case DisplayTypeEnum.REFERENCE:
+				case DisplayTypeEnum.PICKLIST:
+				case DisplayTypeEnum.MULTI_PICKLIST:
+				case DisplayTypeEnum.EMAIL:
+				case DisplayTypeEnum.PHONE:
+				case DisplayTypeEnum.ID:
+				case DisplayTypeEnum.ENCRYPTED_STRING:
+				case DisplayTypeEnum.URL:
+					fieldDto.apiDataType = DisplayTypeEnum.STRING;
+					break;
+				case DisplayTypeEnum.INTEGER:
+				case DisplayTypeEnum.INTEGER_ABBREVIATED:
+					fieldDto.apiDataType = DisplayTypeEnum.INTEGER;
+					break;
+				default:
+					fieldDto.apiDataType = fieldDto.type;
+					break;
+			}
+
+			return fieldDto;
 		});
 
-		//const data = JsonApiService.serialize<SobjectDescribe>('sobject-metadata', sobjectDescribe, 'name');
 		const data = JsonApiService.serialize<SobjectDescribeDto>('sobject-metadata', sobjectDescribeDto, 'name');
 
 		const document =  new JsonApiDocument<SobjectDescribe>(data);
@@ -86,17 +113,6 @@ function combineActionOverrides(sobjectActionOverrides: ActionOverride[], metada
 
 	const combinedOverrides: ActionOverrideDto[] = [];
 
-	// sobjectActionOverrides.forEach(sao => {
-
-	// 	const metadataActionOverride = metadataActionOverrides.find(mao => mao.actionName === sao.name);
-
-	// 	const aoDto = new ActionOverrideDto();
-	// 	aoDto.sobjectActionOverride = sao;
-	// 	aoDto.metadataActionOverride = metadataActionOverride;
-
-	// 	combinedOverrides.push(aoDto);
-	// });
-
 	metadataActionOverrides.forEach(mao => {
 
 		let sobjectAO = sobjectActionOverrides.find(sao => sao.name === mao.actionName);
@@ -108,15 +124,6 @@ function combineActionOverrides(sobjectActionOverrides: ActionOverride[], metada
 		aoDto.sobjectActionOverride = sobjectAO;
 
 		combinedOverrides.push(aoDto);
-
-		// if(!combinedOverrides.some(co => co.sobjectActionOverride.name === mao.actionName)) {
-			
-		// 	const aoDto = new ActionOverrideDto();
-		// 	aoDto.metadataActionOverride = mao;
-
-		// 	combinedOverrides.push(aoDto);
-		// }
-
 	});
 
 	sobjectActionOverrides.forEach(sao => {
@@ -133,4 +140,28 @@ function combineActionOverrides(sobjectActionOverrides: ActionOverride[], metada
 	});
 
 	return combinedOverrides;
+}
+
+function combineRecordTypes(recordTypeInfos: RecordTypeInfo[], recordTypes: RecordType[]) : RecordTypeDto[] {
+
+	return recordTypeInfos.map(rtInfo => {
+
+		const metadataRecordType = recordTypes.find(rt => rt.label === rtInfo.name);
+
+		const rtDto = new RecordTypeDto();
+		rtDto.isAvailable = rtInfo.available;
+		rtDto.isDefault = rtInfo.defaultRecordTypeMapping;
+		rtDto.isMaster = rtInfo.master;
+		rtDto.name = rtInfo.name;
+		rtDto.id = rtInfo.recordTypeId;
+
+		if(metadataRecordType) {
+			rtDto.isActive = metadataRecordType.active;
+			rtDto.description = metadataRecordType.description;
+			rtDto.developerName = metadataRecordType.fullName;
+		}
+
+		return rtDto;
+	});
+
 }

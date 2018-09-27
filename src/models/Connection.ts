@@ -1,5 +1,5 @@
 import { ConnectionDetails } from '../models/ConnectionDetails';
-import jsforce from 'jsforce';
+import Jsforce from 'jsforce';
 
 export class Connection {
 	

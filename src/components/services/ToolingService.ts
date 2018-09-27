@@ -33,9 +33,11 @@ export class ToolingService extends AbstractSobjectService {
 		}
 	}
 
-	public async sobjectDescribe(sobjectName: string) : Promise<SobjectDescribe> {
+	public async sobjectDescribe(sobjectName: string, force: boolean = false) : Promise<SobjectDescribe> {
 		try {
-			return await this._describeSobject(sobjectName, this.connectionDetails.organizationId);
+
+			return await this._describeSobject(sobjectName, this.connectionDetails.organizationId, force);
+
 		} catch (error) {
 			this.debug.error(`sobjectDescribe() error`, error);
 			throw error;

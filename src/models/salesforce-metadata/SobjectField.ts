@@ -1,6 +1,9 @@
 import { PicklistValue } from './PicklistValue';
 import { FilteredLookupInfo } from './FilteredLookupInfo';
 
+/**
+ * This is the sobject field description using the standard describe.
+ */
 export class SobjectField {
 	aggregatable: boolean;
 	autoNumber: boolean;
@@ -59,6 +62,9 @@ export class SobjectField {
 	unique: boolean;
 	updateable: boolean;
 	writeRequiresMasterRead: boolean;
+
+	//Extra fields
+	apiDataType: string;
 
 	constructor(sobjectField: any = {}) {
 		this.aggregatable = sobjectField.aggregatable;

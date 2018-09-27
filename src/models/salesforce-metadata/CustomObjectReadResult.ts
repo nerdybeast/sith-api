@@ -110,19 +110,19 @@ export class CustomObjectReadResult extends Metadata {
 		this.indexes = toArray(json.indexes).map(x => new Index(x));
 		this.label = json.label = json.label || null;
 		this.listViews = toArray(json.listViews).map(x => new ListView(x));
-		// this.namedFilter = json.xxx
-		// this.nameField = json.xxx
-		// this.pluralLabel = json.xxx
-		// this.recordTypes = json.xxx
-		// this.recordTypeTrackFeedHistory = json.xxx
-		// this.recordTypeTrackHistory = json.xxx
-		// this.searchLayouts = json.xxx
-		// this.sharingModel = json.xxx
-		// this.sharingReasons = json.xxx
-		// this.sharingRecalculations = json.xxx
-		// this.startsWith = json.xxx
-		// this.validationRules = json.xxx
-		// this.visibility = json.xxx
-		// this.webLinks = json.xxx
+		this.namedFilter = toArray(json.namedFilter).map(x => new NamedFilter(x));
+		this.nameField = new CustomField(json.nameField);
+		this.pluralLabel = json.pluralLabel || null;
+		this.recordTypes = toArray(json.recordTypes).map(x => new RecordType(x));
+		this.recordTypeTrackFeedHistory = toBoolean(json.recordTypeTrackFeedHistory);
+		this.recordTypeTrackHistory = toBoolean(json.recordTypeTrackHistory);
+		this.searchLayouts = new SearchLayouts(json.searchLayouts);
+		this.sharingModel = json.sharingModel || null;
+		this.sharingReasons = toArray(json.sharingReasons).map(x => new SharingReason(x));
+		this.sharingRecalculations = toArray(json.sharingRecalculations).map(x => new SharingRecalculation(x));
+		this.startsWith = json.startsWith || null;
+		this.validationRules = toArray(json.validationRules).map(x => new ValidationRule(x));
+		this.visibility = json.visibility || null;
+		this.webLinks = toArray(json.webLinks).map(x => new WebLink(x));
 	}
 }

@@ -5,4 +5,4 @@
 import dotenv = require('dotenv');
 dotenv.config();
 
-import './src/server';
+import './server';
