@@ -1,6 +1,6 @@
 import { fork } from 'child_process';
 import { join } from 'path';
-import { WebSocketGateway, NestGateway, SubscribeMessage, WebSocketServer } from '@nestjs/websockets';
+import { WebSocketGateway, SubscribeMessage, WebSocketServer, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
 import { Debug } from '../../../../utilities/debug';
 import { ConnectionDetails } from '../../../../models/ConnectionDetails';
 import { UserPoller } from '../../../../models/ipc/UserPoller';
@@ -9,7 +9,7 @@ import * as jsonapi from 'jsonapi-serializer';
 import { ApexLogsUpdateIPC } from '../../../../models/ipc/ApexLogsUpdateIPC';
 
 @WebSocketGateway({ namespace: 'APEX_LOGS' })
-export class ApexLogGateway implements NestGateway {
+export class ApexLogGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
 
 	@WebSocketServer() server;
 

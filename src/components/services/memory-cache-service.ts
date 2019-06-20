@@ -1,10 +1,10 @@
 import * as path from 'path';
 import * as fs from 'fs';
-import { Component } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ICache } from '../../interfaces/ICache';
 import { Debug } from '../../utilities/debug';
 
-@Component()
+@Injectable()
 export class MemoryCache implements ICache {
 
 	private cache = new Map();

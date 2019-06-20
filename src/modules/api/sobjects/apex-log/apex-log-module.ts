@@ -3,7 +3,7 @@ import { ApexLogController } from './apex-log-controller';
 import { ApexLogGateway } from './ApexLogGateway';
 
 @Module({ 
-	components: [ApexLogGateway],
+	providers: [ApexLogGateway],
 	controllers: [ApexLogController]
 })
 export class ApexLogModule { }

@@ -1,8 +1,8 @@
-import { Component } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { OrgVersion } from '../../models/org-version';
 import got from 'got';
 
-@Component()
+@Injectable()
 export class OrgService {
 
 	constructor() { }

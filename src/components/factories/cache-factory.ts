@@ -1,9 +1,9 @@
-import { Component } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ICache } from '../../interfaces/ICache';
 import { MemoryCache } from '../services/memory-cache-service';
 import { Debug } from '../../utilities/debug';
 
-@Component()
+@Injectable()
 export class CacheFactory {
 
 	private static cacheInstance: ICache;

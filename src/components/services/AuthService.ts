@@ -1,9 +1,9 @@
-import { Component } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import * as got from 'got';
 import { Profile } from '../../models/profile';
 import { ClientCredentials } from '../../models/client-credentials';
 
-@Component()
+@Injectable()
 export class AuthService {
 
 	async getAuthToken() : Promise<ClientCredentials> {

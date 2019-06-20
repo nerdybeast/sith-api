@@ -3,7 +3,7 @@ import { TraceFlagController } from './TraceFlagController';
 import { TraceFlagGateway } from './TraceFlagGateway';
 
 @Module({
-	components: [TraceFlagGateway],
-	controllers: [TraceFlagController]
+	controllers: [TraceFlagController],
+	providers: [TraceFlagGateway]
 })
 export class TraceFlagModule { }

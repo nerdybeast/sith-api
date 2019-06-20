@@ -5,6 +5,6 @@ import { AuthService } from '../../components/services/AuthService';
 
 @Module({
 	controllers: [UserController],
-	components: [UserService, AuthService]
+	providers: [UserService, AuthService]
 })
 export class UserModule {}
