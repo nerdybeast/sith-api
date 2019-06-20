@@ -1,6 +1,9 @@
+# Because we're specifying node js, Travis Ci makes some assumptions
+# - It will automatically run `npm test`
+# See: https://docs.travis-ci.com/user/languages/javascript-with-nodejs/
 language: node_js
 node_js:
-  - "lts/*"
+  - "lts/*" #Tells Travis Ci to use the latest supported version of node js
 notifications:
   slack:
     secure: "NqMWMqKVV2AN1sX5nUF3zNzC0oBY99CjGQ0pmRlRMk27Hjnhwb6zYKlxgzPln4Lse6sXauw4w4TiNKApYRDYV0KYKfeP2dRqG/PbNBpziIsjraxEjalkozKSIum+/Gr3MzABugH8BFHBNHdwbrw2zD61p+bxUKycP5b3AIZJCkkpCmuycGbX/JX31/1mINn4vRK2EfYCebmOg2v8mbkD+d77WMN+0Y7N8cgZc6mNyoDIWJk3hPZldnWsgC+Z6lKlNr+M9Xv9GNwfg0HacgJpVog/pbumMk7raCmvJdmZvN9aiRs5VvMHPMFxrH1KhE/TmgzYsK3DAny/2x8ePDgY4JrUqQiSBbADASof3uaYol2XJzwV8Prik/RbP/SQbiSVfLnZs2XfDAf7AlfKEyikbtlmW83D0MahFxOvuwiyUMnmGDgDX8I+c/mEeMpessthB7nVKsSpgrYa94LJw+i9yJERSfcB/SS/ODop+NsQj+muVh1icj9IwKg7A410h7x6RoorOySeUzRCUsnVYAxWT7ZloKlxhs8Nbmh2i73vNxIOmSXrRskXZuKDq+r9HQ3ke1s0gjO+6gyJa7+9fQ2Au7SuN1Lfft5vxv6e9peDxA0Lzh3J1lq/4ZvBf6cVP+945AjX7L0vzhAITJNizYVAN6aEyab9SP0UMpUyjE2PbBc="
