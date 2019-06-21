@@ -119,7 +119,7 @@ export abstract class AbstractSobjectService extends SalesforceService {
 			const sobjectBaseMetadata = await this._describeSobjectBase(this.sobjectName);
 
 			const apiType = sobjectBaseMetadata.isTooling ? ApiType.TOOLING : ApiType.STANDARD;
-			let result = await this.sobjectCrudOperation(apiType, this.sobjectName, action, data);
+			let result: any = await this.sobjectCrudOperation(apiType, this.sobjectName, action, data);
 
 			result = camelCaseKeys(result, { deep: true });
 
@@ -141,7 +141,7 @@ export abstract class AbstractSobjectService extends SalesforceService {
 		try {
 
 			//let queryResult = await (isToolingQuery ? this.conn.tooling.query(soql) : this.conn.query(soql));
-			let queryResult = await (isToolingQuery ? this.toolingQuery(soql) : this.standardQuery(soql));
+			let queryResult: any = await (isToolingQuery ? this.toolingQuery(soql) : this.standardQuery(soql));
 			this.debug.verbose(`Raw query result`, queryResult);
 
 			//1. To help be json api compliant
@@ -166,10 +166,10 @@ export abstract class AbstractSobjectService extends SalesforceService {
 		try {
 
 			//let searchResult = await (isTooling ? this.conn.tooling.search(sosl) : this.conn.search(sosl));
-			let searchResult: SearchResult = await (isTooling ? this.toolingSearch(sosl) : this.standardSearch(sosl));
+			let searchResult: any = await (isTooling ? this.toolingSearch(sosl) : this.standardSearch(sosl));
 			this.debug.verbose(`Raw search result`, searchResult);
 
-			searchResult = camelCaseKeys(searchResult, { deep: true });
+			searchResult = camelCaseKeys(searchResult as any, { deep: true });
 
 			//return searchResult as SearchResult;
 			return searchResult;

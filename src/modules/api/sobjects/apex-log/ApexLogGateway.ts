@@ -67,7 +67,7 @@ export class ApexLogGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 
 		if(userPoller.fork && userPoller.fork.connected) return;
 
-		const childProcess = fork(join(__dirname, 'apex-log-fork'), ['--inspect=5860']);
+		const childProcess = fork(join(__dirname, 'apex-log-fork'));
 		
 		this.debug.verbose(`child process id`, childProcess.pid);
 

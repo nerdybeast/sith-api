@@ -117,9 +117,7 @@ export class TraceFlagGateway implements OnGatewayInit, OnGatewayConnection, OnG
 		}
 
 		//DO NOT add the file extension to "trace-flag-fork" file reference, this allows it to be evaluated as TS during development and JS when running live, win!
-		const childProcess = fork(join(__dirname, 'trace-flag-fork'), [], {
-			//execArgv: ['--inspect=5860']
-		});
+		const childProcess = fork(join(__dirname, 'trace-flag-fork'));
 
 		this.debug.verbose(`child process id`, childProcess.pid);
 

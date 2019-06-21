@@ -39,7 +39,7 @@
     "cors": "^2.8.5",
     "debug": "^4.1.1",
     "got": "^8.3.2",
-    "jsforce": "^1.9.1",
+    "jsforce": "^1.8.5",
     "jsonapi-serializer": "^3.6.4",
     "jsonwebtoken": "^8.5.1",
     "lodash.camelcase": "^4.3.0",
