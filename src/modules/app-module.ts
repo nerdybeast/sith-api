@@ -5,7 +5,7 @@ import { OrgModule } from './org/org-module';
 import { ApiModule } from './api/api-module';
 
 @Module({
-	modules: [UserModule, OrgModule, ApiModule],
+	imports: [UserModule, OrgModule, ApiModule],
 	controllers: [AppController]
 })
 export class ApplicationModule {}

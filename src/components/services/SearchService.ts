@@ -67,7 +67,7 @@ export class SearchService {
 
 			const sobjectDescription = sobjectDescriptions.find(x => x.name === record.attributes.type);
 			
-			const recordCopy = camelCaseKeys(record);
+			const recordCopy = camelCaseKeys(record as any);
 			const nameFieldPropertyName = camelCase(sobjectDescription.fields.find(x => x.nameField).name);
 
 			const searchResult = new SearchResultDto();

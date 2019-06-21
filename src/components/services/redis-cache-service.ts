@@ -1,5 +1,5 @@
 // import { promisify } from 'util';
-import { Component } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 // import * as redis from 'redis';
 import { ICache } from '../../interfaces/ICache';
 
@@ -8,7 +8,7 @@ import { ICache } from '../../interfaces/ICache';
 
 // const client = redis.createClient(process.env.REDISCLOUD_URL);
 
-@Component()
+@Injectable()
 export class RedisCache implements ICache {
 
 	async get <T>(key: string) : Promise<T> {

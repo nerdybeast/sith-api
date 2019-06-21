@@ -1,10 +1,8 @@
 import { GlobalDescribe } from '../src/models/salesforce-metadata/GlobalDescribe';
-import { SobjectDescribeBase } from '../src/models/salesforce-metadata/SobjectDescribeBase';
 import { QueryResult } from '../src/models/query-result';
 import { Sobject } from '../src/models/sobjects/Sobject';
 import { JsforceError } from '../src/models/JsforceError';
 import { SobjectDescribe } from '../src/models/salesforce-metadata/SobjectDescribe';
-import { SobjectField } from '../src/models/salesforce-metadata/SobjectField';
 import { CrudResult } from '../src/models/CrudResult';
 
 const jsforce: any = jest.genMockFromModule('jsforce');

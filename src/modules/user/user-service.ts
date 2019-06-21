@@ -1,7 +1,7 @@
-import { Component } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { AuthService } from '../../components/services/AuthService';
 
-@Component()
+@Injectable()
 export class UserService {
 
 	constructor(private readonly authService: AuthService) { }

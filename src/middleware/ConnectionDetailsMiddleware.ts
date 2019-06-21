@@ -1,22 +1,25 @@
-import { Middleware, NestMiddleware, ExpressMiddleware } from '@nestjs/common';
+import { Injectable, NestMiddleware } from '@nestjs/common';
 import { ConnectionDetails } from '../models/ConnectionDetails';
+import { Request, Response } from 'express';
 
-@Middleware()
+@Injectable()
 export class ConnectionDetailsMiddleware implements NestMiddleware {
-	resolve(...args: any[]): ExpressMiddleware {
-		return (req, res, next) => {
-			
-			const connectionDetails = new ConnectionDetails();
-			connectionDetails.instanceUrl = req.headers['instance-url'];
-			connectionDetails.organizationId = req.headers['organization-id'];
-			connectionDetails.sessionId = req.headers['salesforce-session-token'];
-			connectionDetails.userId = req.headers['user-id'];
-			connectionDetails.orgVersion = req.headers['org-version'];
+	
+	use(req: Request, res: Response, next: Function) {
 
-			req.connectionDetails = connectionDetails;
-			req.user = connectionDetails;
+		const connectionDetails = new ConnectionDetails();
+		connectionDetails.instanceUrl = req.headers['instance-url'] as string;
+		connectionDetails.organizationId = req.headers['organization-id'] as string;
+		connectionDetails.sessionId = req.headers['salesforce-session-token'] as string;
+		connectionDetails.userId = req.headers['user-id'] as string;
+		connectionDetails.orgVersion = req.headers['org-version'] as string;
 
-			next();
-		};
+		//@ts-ignore - "connectionDetails" does not exist on the express Request object but we're throwing it on there anyway...
+		req.connectionDetails = connectionDetails;
+
+		//@ts-ignore - "user" does not exist on the express Request object but we're throwing it on there anyway...
+		req.user = connectionDetails;
+
+		next();
 	}
 }

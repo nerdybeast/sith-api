@@ -4,6 +4,6 @@ import { OrgService } from './org-service';
 
 @Module({
 	controllers: [OrgController],
-	components: [OrgService]
+	providers: [OrgService]
 })
 export class OrgModule {}

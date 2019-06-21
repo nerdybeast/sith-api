@@ -1,4 +1,4 @@
-import { Module, NestModule, MiddlewaresConsumer } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { ToolingController } from './tooling-controller';
 import { ConnectionDetailsMiddleware } from '../../../middleware/ConnectionDetailsMiddleware';
 
@@ -6,7 +6,7 @@ import { ConnectionDetailsMiddleware } from '../../../middleware/ConnectionDetai
 	controllers: [ToolingController]
 })
 export class ToolingModule implements NestModule {
-	configure(consumer: MiddlewaresConsumer) {
+	configure(consumer: MiddlewareConsumer) {
 		consumer.apply(ConnectionDetailsMiddleware).forRoutes(
 			ToolingController
 		);

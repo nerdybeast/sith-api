@@ -4,6 +4,6 @@ import { MetadataModule } from './metadata/metadata-module';
 import { SobjectsModule } from './sobjects/sobjects-module';
 
 @Module({
-	modules: [ ToolingModule, SobjectsModule, MetadataModule ]
+	imports: [ ToolingModule, SobjectsModule, MetadataModule ]
 })
 export class ApiModule {}

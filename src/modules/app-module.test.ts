@@ -1,25 +1,25 @@
-import express from 'express';
 import request from 'supertest';
 import { Test } from '@nestjs/testing';
 import { ApplicationModule } from '../../src/modules/app-module';
+import { INestApplication } from '@nestjs/common';
 
 describe('Application Module', () => {
 
-	const server = express();
+	let app: INestApplication;
 
 	beforeAll(async () => {
 
 		const module = await Test.createTestingModule({
-			modules: [ApplicationModule]
+			imports: [ApplicationModule]
 		})
 		.compile();
 
-		const app = module.createNestApplication(server);
+		app = module.createNestApplication();
 		await app.init();
 	});
 
 	test(`GET /`, async () => {
-		const response = await request(server)
+		const response = await request(app.getHttpServer())
 			.get('/');
 
 		expect(response.status).toBe(200);

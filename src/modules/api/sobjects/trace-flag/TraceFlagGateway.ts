@@ -1,11 +1,12 @@
 import { fork, ChildProcess } from 'child_process';
 import { join } from 'path';
-import { WebSocketGateway, NestGateway, SubscribeMessage, WebSocketServer } from '@nestjs/websockets';
+import { WebSocketGateway, SubscribeMessage, WebSocketServer, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
 import { Debug } from '../../../../utilities/debug';
 import { ConnectionDetails } from '../../../../models/ConnectionDetails';
 import { TraceFlagService } from '../../../../components/services/TraceFlagService';
 import { TraceFlagIPC } from '../../../../models/ipc/TraceFlagIPC';
 import { TraceFlagsUpdateIPC } from '../../../../models/ipc/TraceFlagsUpdateIPC';
+import { Client as SocketIoClient, Server as SocketIoServer } from 'socket.io';
 
 class OrgPoller {
 	fork: ChildProcess;
@@ -13,23 +14,23 @@ class OrgPoller {
 }
 
 @WebSocketGateway({ namespace: 'TRACE_FLAGS' })
-export class TraceFlagGateway implements NestGateway {
+export class TraceFlagGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
 
-	@WebSocketServer() server;
+	@WebSocketServer() server: SocketIoServer;
 
 	private debug = new Debug('TraceFlagGateway');
 	private socketMap = new Map<string, ConnectionDetails>();
 	private pollingMap = new Map<string, OrgPoller>();
 
-	afterInit(server) {
+	afterInit() : void {
 		this.debug.info(`trace-flags gateway initialized`);
 	}
 
-	handleConnection(client) {
+	handleConnection(client: SocketIoClient) : void {
 		this.debug.info(`trace-flags client connected`, client.id);
 	}
 
-	handleDisconnect(client) {
+	handleDisconnect(client: SocketIoClient) : void {
 		
 		this.debug.info(`trace-flags client disconnected`, client.id);
 
@@ -79,7 +80,7 @@ export class TraceFlagGateway implements NestGateway {
 	}
 
 	@SubscribeMessage('start')
-	async start(socket, connectionDetails: ConnectionDetails) {
+	async start(socket: any, connectionDetails: ConnectionDetails) {
 
 		//Have each socket for the same user join a "room" so that we can emit messages to this single user.
 		//If the user has multiple browser tabs open for this app, that would be multiple sockets for the same user.
@@ -89,7 +90,7 @@ export class TraceFlagGateway implements NestGateway {
 		this.addConnection(socket.id, connectionDetails);
 	}
 
-	addConnection(socketId, connectionDetails: ConnectionDetails) {
+	addConnection(socketId: string, connectionDetails: ConnectionDetails) {
 
 		const { organizationId, userId } = connectionDetails;
 
@@ -116,7 +117,7 @@ export class TraceFlagGateway implements NestGateway {
 		}
 
 		//DO NOT add the file extension to "trace-flag-fork" file reference, this allows it to be evaluated as TS during development and JS when running live, win!
-		const childProcess = fork(join(__dirname, 'trace-flag-fork'), ['--inspect=5859']);
+		const childProcess = fork(join(__dirname, 'trace-flag-fork'));
 
 		this.debug.verbose(`child process id`, childProcess.pid);
 

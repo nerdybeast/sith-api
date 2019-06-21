@@ -1,28 +1,27 @@
-import express from 'express';
 import request from 'supertest';
 import jwt from 'jsonwebtoken';
 import { Test } from '@nestjs/testing';
 import { ApplicationModule } from '../app-module';
 import { ClientCredentials } from '../../models/client-credentials';
 import { Profile } from '../../models/profile';
+import { INestApplication } from '@nestjs/common';
 
 //debugger;
 
 describe('User Module', () => {
 
-	const server = express();
-
 	const tokenInformation = { sub: '12345' };
 	const accessToken = jwt.sign(tokenInformation, '123');
+	let app: INestApplication;
 
 	beforeAll(async () => {
 
 		const module = await Test.createTestingModule({
-			modules: [ApplicationModule]
+			imports: [ApplicationModule]
 		})
 		.compile();
 
-		const app = module.createNestApplication(server);
+		app = module.createNestApplication();
 		await app.init();
 	});
 
@@ -49,7 +48,7 @@ describe('User Module', () => {
 			body: profile
 		}]);
 
-		const response = await request(server)
+		const response = await request(app.getHttpServer())
 			.get('/api/user/12345');
 
 		expect(response.status).toBe(200);
@@ -76,7 +75,7 @@ describe('User Module', () => {
 			body: profile
 		}]);
 
-		const response = await request(server)
+		const response = await request(app.getHttpServer())
 			.post('/api/user/profile')
 			.send({ token: accessToken });
 

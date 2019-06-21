@@ -1,4 +1,4 @@
-import { Module, NestModule, MiddlewaresConsumer } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { SearchController } from './SearchController';
 import { ConnectionDetailsMiddleware } from '../../../../middleware/ConnectionDetailsMiddleware';
 
@@ -6,7 +6,7 @@ import { ConnectionDetailsMiddleware } from '../../../../middleware/ConnectionDe
 	controllers: [SearchController]
 })
 export class SearchModule implements NestModule {
-	configure(consumer: MiddlewaresConsumer) {
+	configure(consumer: MiddlewareConsumer) {
 		consumer.apply(ConnectionDetailsMiddleware).forRoutes(
 			SearchController
 		);

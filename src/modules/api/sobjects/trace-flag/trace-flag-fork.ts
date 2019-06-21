@@ -76,7 +76,9 @@ export async function poll(pollingRateInMilliseconds: number) {
 			return new UserTraceFlags(x.userId, usersTraceFlags);
 		});
 
-		invokeProcessFn('send', new TraceFlagsUpdateIPC(usersList, traceFlagFieldNames, debugLevelFieldNames));
+		const traceFlagsUpdateIPC = new TraceFlagsUpdateIPC(usersList, traceFlagFieldNames, debugLevelFieldNames);
+		console.info('traceFlagsUpdateIPC ==>', traceFlagsUpdateIPC);
+		invokeProcessFn('send', traceFlagsUpdateIPC);
 	}
 
 	connection = undefined;
