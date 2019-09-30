@@ -1,19 +1,22 @@
-import { SalesforceService } from './SalesforceService';
+import { SalesforceService } from '../services/SalesforceService';
 import { Connection } from '../../models/Connection';
 import { CustomObjectReadResult } from '../../models/salesforce-metadata/CustomObjectReadResult';
 import { ICache } from '../../interfaces/ICache';
-import { CacheFactory } from '../factories/cache-factory';
 import { FileProperties } from '../../models/salesforce-metadata/FileProperties';
 import { CacheKeys } from '../../utilities/cache-helpers/CacheKeys';
 import { CacheDurationEnum } from '../../utilities/cache-helpers/CacheDurationEnum';
+import { IMetadataService } from './IMetadataService';
+import { CacheService } from '../cache/CacheService';
 
-export class MetadataService extends SalesforceService {
+export class MetadataService extends SalesforceService implements IMetadataService {
 
+	protected connection: Connection;
 	private cache: ICache;
 
-	constructor(protected connection: Connection) {
+	constructor(connection: Connection, cache: CacheService) {
 		super(connection);
-		this.cache = CacheFactory.getCache();
+		this.connection = connection;
+		this.cache = cache;
 	}
 
 	public async listCustomObjectTypes() {

@@ -3,8 +3,9 @@ import { Connection } from '../../models/Connection';
 import { AbstractSobjectService } from './AbstractSobjectService';
 import { SobjectDescribeBase } from '../../models/salesforce-metadata/SobjectDescribeBase';
 import { SobjectDescribe } from '../../models/salesforce-metadata/SobjectDescribe';
+import { IToolingService } from './IToolingService';
 
-export class ToolingService extends AbstractSobjectService {
+export class ToolingService extends AbstractSobjectService implements IToolingService {
 
 	constructor(connection: Connection) {
 		super('Tooling', connection);
