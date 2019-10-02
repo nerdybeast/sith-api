@@ -2,7 +2,7 @@ import { AbstractSobjectService } from './AbstractSobjectService';
 import { TraceFlag } from '../../models/sobjects/TraceFlag';
 import { CrudResult } from '../../models/CrudResult';
 import { DebugLevelService } from './DebugLevelService';
-import * as jsonapi from 'jsonapi-serializer';
+import jsonapi from 'jsonapi-serializer';
 import { Connection } from '../../models/Connection';
 
 export class TraceFlagService extends AbstractSobjectService {

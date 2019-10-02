@@ -5,7 +5,7 @@ import { Debug } from '../../../../utilities/debug';
 import { ConnectionDetails } from '../../../../models/ConnectionDetails';
 import { UserPoller } from '../../../../models/ipc/UserPoller';
 import { TraceFlagIPC } from '../../../../models/ipc/TraceFlagIPC';
-import * as jsonapi from 'jsonapi-serializer';
+import jsonapi from 'jsonapi-serializer';
 import { ApexLogsUpdateIPC } from '../../../../models/ipc/ApexLogsUpdateIPC';
 
 @WebSocketGateway({ namespace: 'APEX_LOGS' })

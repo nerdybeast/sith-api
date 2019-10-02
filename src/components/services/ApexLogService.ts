@@ -1,6 +1,6 @@
 import { AbstractSobjectService } from './AbstractSobjectService';
 import { ApexLog } from '../../models/sobjects/ApexLog';
-import * as got from 'got';
+import got from 'got';
 import { Connection } from '../../models/Connection';
 
 export class ApexLogService extends AbstractSobjectService {

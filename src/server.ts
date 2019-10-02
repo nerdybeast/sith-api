@@ -9,7 +9,9 @@ import { GlobalAnyExceptionFilter } from './components/filters/GlobalAnyExceptio
 import { NotFoundExceptionFilter } from './components/filters/NotFoundExceptionFilter';
 
 (async function bootstrap() {
+
 	const app = await NestFactory.create(ApplicationModule);
+
 	app.useGlobalFilters(new NotFoundExceptionFilter(), new GlobalHttpExceptionFilter(), new GlobalAnyExceptionFilter());
 	app.use(morgan('dev'));
 	app.use(cors());

@@ -4,7 +4,7 @@ import logger from '../../utilities/logger';
 @Catch(HttpException)
 export class GlobalHttpExceptionFilter implements ExceptionFilter {
 
-	catch(exception: HttpException, response) {
+	catch(exception: HttpException, response: any) {
 
 		const status = exception.getStatus();
 		const exceptionResponse = exception.getResponse();

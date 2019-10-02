@@ -4,7 +4,11 @@ import { IMetadataService } from '../services/IMetadataService';
 import { IToolingService } from '../services/IToolingService';
 import { ToolingService } from '../services/ToolingService';
 import { CacheService } from '../cache/CacheService';
+import { Injectable } from '@nestjs/common';
+import { ApexLogService } from '../services/ApexLogService';
+import { IApexLogService } from '../services/IApexLogService';
 
+@Injectable()
 export class ConnectionFactory {
 
 	private cacheService: CacheService;
@@ -13,12 +17,16 @@ export class ConnectionFactory {
 		this.cacheService = cacheService;
 	}
 
-	public createMetadataService(connectionDetails: Connection) : IMetadataService {
+	public createMetadataService(connection: Connection) : IMetadataService {
 		const cacheService = this.cacheService;
-		return new MetadataService(connectionDetails, cacheService);
+		return new MetadataService(connection, cacheService);
 	}
 
-	public createToolingService(connectionDetails: Connection) : IToolingService {
-		return new ToolingService(connectionDetails);
+	public createToolingService(connection: Connection) : IToolingService {
+		return new ToolingService(connection);
+	}
+
+	public createApexLogService(connection: Connection) : IApexLogService {
+		return new ApexLogService(connection);
 	}
 }

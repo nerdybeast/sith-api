@@ -1,5 +1,5 @@
-import * as path from 'path';
-import * as fs from 'fs';
+import path from 'path';
+import fs from 'fs';
 import { Injectable } from '@nestjs/common';
 import { ICache } from '../../interfaces/ICache';
 import { Debug } from '../../utilities/debug';

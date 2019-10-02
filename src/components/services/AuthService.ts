@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import * as got from 'got';
+import got from 'got';
 import { Profile } from '../../models/profile';
 import { ClientCredentials } from '../../models/client-credentials';
 

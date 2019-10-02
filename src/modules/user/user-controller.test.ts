@@ -1,4 +1,4 @@
-import * as jwt from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import { ClientCredentials } from '../../models/client-credentials';
 import { Profile } from '../../models/profile';
 import { UserController } from './user-controller';
