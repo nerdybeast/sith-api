@@ -1,10 +1,10 @@
 import { Module, Provider } from '@nestjs/common';
 import redis from 'redis';
 import { CacheService } from './CacheService';
-import { promisify } from 'util';
+// import { promisify } from 'util';
 
-promisify(redis.RedisClient);
-promisify(redis.Multi);
+// promisify(redis.RedisClient);
+// promisify(redis.Multi);
 
 export const redisClientProvider: Provider = {
 	provide: 'redisClient',
