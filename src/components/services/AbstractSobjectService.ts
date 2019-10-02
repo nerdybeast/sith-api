@@ -3,7 +3,6 @@ import camelCaseKeys = require('camelcase-keys');
 import camelCase = require('lodash.camelcase');
 
 import { UnauthorizedException, ForbiddenException, BadRequestException, NotFoundException } from '@nestjs/common';
-import { CacheFactory } from '../factories/cache-factory';
 import { ICache } from '../../interfaces/ICache';
 import { ConnectionDetails } from '../../models/ConnectionDetails';
 import { QueryResult } from '../../models/query-result';
@@ -29,13 +28,13 @@ export abstract class AbstractSobjectService extends SalesforceService {
 	protected conn: any;
 	protected debug: Debug;
 
-	constructor(sobjectName: string, connection: Connection) {
+	constructor(sobjectName: string, connection: Connection, cache: ICache) {
 
 		super(connection);
 
 		this.sobjectName = sobjectName;
 		this.connectionDetails = connection.details;
-		this.cache = CacheFactory.getCache();
+		this.cache = cache;
 
 		this.conn = connection.jsforce;
 

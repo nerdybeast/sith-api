@@ -4,7 +4,11 @@ import { AuthService } from '../../components/services/AuthService';
 @Injectable()
 export class UserService {
 
-	constructor(private readonly authService: AuthService) { }
+	private readonly authService: AuthService;
+
+	constructor(authService: AuthService) {
+		this.authService = authService;
+	}
 
 	async get(userId: string) {
 

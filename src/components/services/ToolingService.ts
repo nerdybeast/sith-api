@@ -4,11 +4,12 @@ import { AbstractSobjectService } from './AbstractSobjectService';
 import { SobjectDescribeBase } from '../../models/salesforce-metadata/SobjectDescribeBase';
 import { SobjectDescribe } from '../../models/salesforce-metadata/SobjectDescribe';
 import { IToolingService } from './IToolingService';
+import { ICache } from '../../interfaces/ICache';
 
 export class ToolingService extends AbstractSobjectService implements IToolingService {
 
-	constructor(connection: Connection) {
-		super('Tooling', connection);
+	constructor(connection: Connection, cache: ICache) {
+		super('Tooling', connection, cache);
 	}
 
 	public async executeAnonymousApex(apex: string) : Promise<AnonymousApexResult> {

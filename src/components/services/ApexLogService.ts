@@ -2,11 +2,12 @@ import { AbstractSobjectService } from './AbstractSobjectService';
 import { ApexLog } from '../../models/sobjects/ApexLog';
 import got from 'got';
 import { Connection } from '../../models/Connection';
+import { ICache } from '../../interfaces/ICache';
 
 export class ApexLogService extends AbstractSobjectService {
-	
-	constructor(connection: Connection) {
-		super('ApexLog', connection);
+
+	constructor(connection: Connection, cache: ICache) {
+		super('ApexLog', connection, cache);
 	}
 
 	public async retrieve(ids: string) : Promise<ApexLog>;

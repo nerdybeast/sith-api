@@ -5,5 +5,5 @@ import { SobjectDescribe } from '../../models/salesforce-metadata/SobjectDescrib
 export interface IToolingService {
 	executeAnonymousApex(apex: string) : Promise<AnonymousApexResult>;
 	globalDescribe() : Promise<SobjectDescribeBase[]>;
-	sobjectDescribe(sobjectName: string, force: boolean) : Promise<SobjectDescribe>;
+	sobjectDescribe(sobjectName: string, force?: boolean) : Promise<SobjectDescribe>;
 }

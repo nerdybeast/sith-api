@@ -1,25 +1,27 @@
 import { AbstractSobjectService } from './AbstractSobjectService';
 import { TraceFlag } from '../../models/sobjects/TraceFlag';
 import { CrudResult } from '../../models/CrudResult';
-import { DebugLevelService } from './DebugLevelService';
 import jsonapi from 'jsonapi-serializer';
 import { Connection } from '../../models/Connection';
+import { ICache } from '../../interfaces/ICache';
+import { ITraceFlagService } from './ITraceFlagService';
+import { IDebugLevelService } from './IDebugLevelService';
 
-export class TraceFlagService extends AbstractSobjectService {
+export class TraceFlagService extends AbstractSobjectService implements ITraceFlagService {
 
-	private readonly _debugLevelService: DebugLevelService;
+	private readonly _debugLevelService: IDebugLevelService;
 
-	constructor(connection: Connection, debugLevelService: DebugLevelService) {
-		super('TraceFlag', connection);
+	constructor(connection: Connection, cache: ICache, debugLevelService: IDebugLevelService) {
+		super('TraceFlag', connection, cache);
 		this._debugLevelService = debugLevelService;
 	}
 
-	public async retrieve(ids: string) : Promise<TraceFlag>;
-	public async retrieve(ids: string[]) : Promise<TraceFlag[]>;
-	public async retrieve(ids: any) : Promise<any> {
-		if(Array.isArray(ids)) return await super.retrieve<TraceFlag[]>(ids);
-		return await super.retrieve<TraceFlag>(ids);
-	}
+	// public async retrieve(ids: string) : Promise<TraceFlag>;
+	// public async retrieve(ids: string[]) : Promise<TraceFlag[]>;
+	// public async retrieve(ids: any) : Promise<any> {
+	// 	if(Array.isArray(ids)) return await super.retrieve<TraceFlag[]>(ids);
+	// 	return await super.retrieve<TraceFlag>(ids);
+	// }
 
 	public async getTraceFlags(userId: string, fieldsToQuery?: string[], debugLevelFieldsToQuery?: string[]) : Promise<TraceFlag[]> {
 
