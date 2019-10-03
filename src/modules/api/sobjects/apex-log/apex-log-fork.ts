@@ -1,13 +1,13 @@
 import { ConnectionDetails } from '../../../../models/ConnectionDetails';
-import isEqual from 'lodash.isequal';
+// import isEqual from 'lodash.isequal';
 import { TraceFlagIPC } from '../../../../models/ipc/TraceFlagIPC';
-import { ApexLogService } from '../../../../components/services/ApexLogService';
-import { ApexLog } from '../../../../models/sobjects/ApexLog';
-import { ApexLogsUpdateIPC } from '../../../../models/ipc/ApexLogsUpdateIPC';
-import { Connection } from '../../../../models/Connection';
+// import { ApexLogService } from '../../../../components/services/ApexLogService';
+// import { ApexLog } from '../../../../models/sobjects/ApexLog';
+// import { ApexLogsUpdateIPC } from '../../../../models/ipc/ApexLogsUpdateIPC';
+// import { Connection } from '../../../../models/Connection';
 
 let connections: ConnectionDetails[] = [];
-let existingApexLogs: ApexLog[];
+// let existingApexLogs: ApexLog[];
 let pollerRunning = false;
 
 process.on('message', (ipc: TraceFlagIPC) => {
@@ -37,31 +37,31 @@ export async function poll(pollingRateInMilliseconds: number) {
 		return;
 	}
 
-	let connection = connections[0];
-	let apexLogService = new ApexLogService(new Connection(connection));
+	// let connection = connections[0];
+	// let apexLogService = new ApexLogService(new Connection(connection));
 
-	let [apexLogFieldNames] = await Promise.all([
-		apexLogService.getSobjectFieldNames()
-	]);
+	// let [apexLogFieldNames] = await Promise.all([
+	// 	apexLogService.getSobjectFieldNames()
+	// ]);
 
-	let apexLogsWithoutBody = await apexLogService.getByUserId(connection.userId, apexLogFieldNames);
+	// let apexLogsWithoutBody = await apexLogService.getByUserId(connection.userId, apexLogFieldNames);
 
-	if(existingApexLogs === undefined) existingApexLogs = apexLogsWithoutBody;
+	// if(existingApexLogs === undefined) existingApexLogs = apexLogsWithoutBody;
 
-	if(!isEqual(existingApexLogs, apexLogsWithoutBody)) {
+	// if(!isEqual(existingApexLogs, apexLogsWithoutBody)) {
 		
-		existingApexLogs = apexLogsWithoutBody;
-		const apexLogs = await apexLogService.attachBody(apexLogsWithoutBody);
+	// 	existingApexLogs = apexLogsWithoutBody;
+	// 	const apexLogs = await apexLogService.attachBody(apexLogsWithoutBody);
 
-		const ipc = new ApexLogsUpdateIPC(connection.userId, apexLogs.filter(log => log.body), apexLogFieldNames);
+	// 	const ipc = new ApexLogsUpdateIPC(connection.userId, apexLogs.filter(log => log.body), apexLogFieldNames);
 
-		invokeProcessFn('send', ipc);
-	}
+	// 	invokeProcessFn('send', ipc);
+	// }
 
-	connection = undefined;
-	apexLogService = undefined;
-	apexLogFieldNames = undefined;
-	apexLogsWithoutBody = undefined;
+	// connection = undefined;
+	// apexLogService = undefined;
+	// apexLogFieldNames = undefined;
+	// apexLogsWithoutBody = undefined;
 
 	setTimeout(() => poll(pollingRateInMilliseconds), pollingRateInMilliseconds);
 }
