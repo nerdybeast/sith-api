@@ -1,116 +1,99 @@
-import { fork } from 'child_process';
-import { join } from 'path';
+import { Client as SocketIoClient, Server as SocketIoServer } from 'socket.io';
 import { WebSocketGateway, SubscribeMessage, WebSocketServer, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
 import { Debug } from '../../../../utilities/debug';
 import { ConnectionDetails } from '../../../../models/ConnectionDetails';
-import { UserPoller } from '../../../../models/ipc/UserPoller';
-import { TraceFlagIPC } from '../../../../models/ipc/TraceFlagIPC';
 import jsonapi from 'jsonapi-serializer';
 import { ApexLogsUpdateIPC } from '../../../../models/ipc/ApexLogsUpdateIPC';
+import { ApexLogFactory } from './ApexLogFactory';
+import { ApexLogPoller } from './ApexLogPoller';
 
 @WebSocketGateway({ namespace: 'APEX_LOGS' })
 export class ApexLogGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
 
-	@WebSocketServer() server;
+	@WebSocketServer() server: SocketIoServer;
+
+	private apexLogFactory: ApexLogFactory;
+
+	constructor(apexLogFactory: ApexLogFactory) {
+		this.apexLogFactory = apexLogFactory;
+	}
 
 	private debug = new Debug('ApexLogGateway');
 	
 	/**
-	 * Map key is the user id.
+	 * Map key is the socket id.
 	 */
 	private socketMap = new Map<string, ConnectionDetails>();
 	
 	/**
 	 * Map key is the user id.
 	 */
-	private pollingMap = new Map<string, UserPoller>();
+	private pollingMap = new Map<string, ApexLogPoller>();
 
-	afterInit(server) {
+	afterInit() {
 		this.debug.info(`apex-logs gateway initialized`);
 	}
 
-	handleConnection(client) {
+	handleConnection(client: SocketIoClient) {
 		this.debug.info(`apex-logs client connected`, client.id);
 	}
 
-	handleDisconnect(client) {
+	handleDisconnect(client: SocketIoClient) {
 
 		this.debug.info(`apex-logs client disconnected`, client.id);
 
 		const connectionDetails = this.socketMap.get(client.id);
+		const apexLogPoller = this.pollingMap.get(connectionDetails.userId);
+		apexLogPoller.removeSocketId(client.id);
+
+		if(!apexLogPoller.HasClients) {
+			this.pollingMap.delete(connectionDetails.userId);
+		}
+
 		this.socketMap.delete(client.id);
-
-		const isLastSingleUserConnection = this._isLastSingleUserConnection(this.socketMap, connectionDetails.userId);
-
-		if(!isLastSingleUserConnection) return;
-
-		this.pollingMap.get(connectionDetails.userId).fork.kill();
 	}
 
 	@SubscribeMessage('start')
-	async start(socket, connectionDetails: ConnectionDetails) {
+	async start(socket: any, connectionDetails: ConnectionDetails) {
 
 		//Have each socket for the same user join a "room" so that we can emit messages to this single user.
 		//If the user has multiple browser tabs open for this app, that would be multiple sockets for the same user.
 		//NOTE: Sockets automatically leave rooms when they disconnect.
 		socket.join(connectionDetails.userId);
 
-		this.socketMap.set(socket.id, connectionDetails);
-
-		if(!this.pollingMap.get(connectionDetails.userId)) {
-			const newUserPoller = new UserPoller();
-			newUserPoller.connection = connectionDetails;
-			this.pollingMap.set(connectionDetails.userId, newUserPoller);
-		}
-
-		const userPoller = this.pollingMap.get(connectionDetails.userId);
-
-		if(userPoller.fork && userPoller.fork.connected) return;
-
-		const childProcess = fork(join(__dirname, 'apex-log-fork'));
-		
-		this.debug.verbose(`child process id`, childProcess.pid);
-
-		childProcess.on('close', (code: number, signal: string) => this.debug.warning(`child process ${childProcess.pid} closed with code "${code}" and signal "${signal}"`));
-		childProcess.on('disconnect', (code: number, signal: string) => this.debug.warning(`child process ${childProcess.pid} disconnected, code: "${code}", signal: "${signal}"`));
-		childProcess.on('error', (error: Error) => this.debug.warning(`child process ${childProcess.pid} threw an error`, error));
-		childProcess.on('exit', (code: number, signal: string) => this.debug.info(`child process ${childProcess.pid} exit, code: "${code}", signal: "${signal}"`));
-		childProcess.on('message', (message: ApexLogsUpdateIPC) => this.onChildProcessMessage(message));
-
-		userPoller.fork = childProcess;
-
-		const ipc = new TraceFlagIPC();
-		ipc.connections = [userPoller.connection];
-		ipc.pollingRateInMilliseconds = Number(process.env.TRACE_FLAG_POLLING_RATE);
-
-		userPoller.fork.send(ipc);
+		this.addConnection(socket.id, connectionDetails);
 	}
 
-	onChildProcessMessage(ipc: ApexLogsUpdateIPC) {
+	private addConnection(socketId: string, connectionDetails: ConnectionDetails) : void {
+
+		this.socketMap.set(socketId, connectionDetails);
+
+		if(!this.pollingMap.has(connectionDetails.userId)) {
+			const apexLogPoller = this.apexLogFactory.createPoller(socketId, connectionDetails);
+			apexLogPoller.poll();
+			apexLogPoller.on('apexLogsUpdate', (ipc: ApexLogsUpdateIPC) => this.onApexLogsUpdateIPC(ipc));
+			this.pollingMap.set(connectionDetails.userId, apexLogPoller);
+			return;
+		}
+
+		this.pollingMap.get(connectionDetails.userId).addSocketId(socketId);
+
+		return;
+	}
+
+	private onApexLogsUpdateIPC(ipc: ApexLogsUpdateIPC) : void {
 
 		const data = new jsonapi.Serializer('apex-log', {
 			attributes: [...ipc.fieldNames, 'body'],
 			keyForAttribute: 'camelCase',
-			typeForAttribute(attr) {
+			typeForAttribute(attr: string) {
 				//Prevents this serializer from converting "apex-log" to its plural form "apex-logs"
 				return attr;
 			}
 		}).serialize(ipc.apexLogs);
 
 		this.server.to(ipc.userId).emit('apex-logs-update', data);
-	}
 
-	private _isLastSingleUserConnection(connectionsMap: Map<string, ConnectionDetails>, userId: string) : boolean {
-
-		let lastSingleUserConnection = true;
-
-		for(const mappedDetails of this.socketMap.values()) {
-			if(mappedDetails.userId === userId) {
-				lastSingleUserConnection = false;
-				break;
-			}
-		}
-
-		return lastSingleUserConnection;
+		return;
 	}
 }

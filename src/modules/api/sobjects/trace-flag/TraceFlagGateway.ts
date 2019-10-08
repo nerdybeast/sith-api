@@ -20,11 +20,11 @@ export class TraceFlagGateway implements OnGatewayInit, OnGatewayConnection, OnG
 
 	private debug = new Debug('TraceFlagGateway');
 
-	//Key is the user's id
+	//Key is the socket id
 	private socketMap = new Map<string, ConnectionDetails>();
 
 	//Key is the user's id
-	private newPollingMap = new Map<string, TraceFlagPoller>();
+	private pollingMap = new Map<string, TraceFlagPoller>();
 
 	afterInit() : void {
 		this.debug.info(`trace-flags gateway initialized`);
@@ -39,10 +39,10 @@ export class TraceFlagGateway implements OnGatewayInit, OnGatewayConnection, OnG
 		this.debug.info(`trace-flags client disconnected`, client.id);
 
 		const connectionDetails: ConnectionDetails = this.socketMap.get(client.id);
-		const traceFlagPoller: TraceFlagPoller = this.newPollingMap.get(connectionDetails.userId);
+		const traceFlagPoller: TraceFlagPoller = this.pollingMap.get(connectionDetails.userId);
 
 		if(traceFlagPoller.removeSocketId(client.id)) {
-			this.newPollingMap.delete(connectionDetails.userId);
+			this.pollingMap.delete(connectionDetails.userId);
 		}
 
 		this.socketMap.delete(client.id);
@@ -63,15 +63,15 @@ export class TraceFlagGateway implements OnGatewayInit, OnGatewayConnection, OnG
 
 		this.socketMap.set(socketId, connectionDetails);
 
-		if(!this.newPollingMap.has(connectionDetails.userId)) {
+		if(!this.pollingMap.has(connectionDetails.userId)) {
 			const traceFlagPoller = this.traceFlagFactory.createPoller(socketId, connectionDetails);
 			traceFlagPoller.poll();
 			traceFlagPoller.on('traceFlagsUpdate', (ipc: TraceFlagsUpdateIPC) => this.onTraceFlagUpdateIPC(ipc));
-			this.newPollingMap.set(connectionDetails.userId, traceFlagPoller);
+			this.pollingMap.set(connectionDetails.userId, traceFlagPoller);
 			return;
 		}
 
-		this.newPollingMap.get(connectionDetails.userId).addSocketId(socketId);
+		this.pollingMap.get(connectionDetails.userId).addSocketId(socketId);
 	}
 
 	async onTraceFlagUpdateIPC(ipc: TraceFlagsUpdateIPC) {
