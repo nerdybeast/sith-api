@@ -4,6 +4,7 @@ import { JsforceError } from '../../models/JsforceError';
 import { generateMockConnection, generateGlobalDescribe } from '../../test-helpers';
 import { CrudResult } from '../../models/CrudResult';
 import { ErrorCode } from '../../models/enums/error-code';
+import { MockCacheService } from '../cache/MockCacheService';
 
 describe('AbstractSobjectService', () => {
 
@@ -16,7 +17,7 @@ describe('AbstractSobjectService', () => {
 	
 		class MockSobjectService extends AbstractSobjectService {
 			constructor() {
-				super('MockSobject', connection);
+				super('MockSobject', connection, new MockCacheService());
 			}
 		}
 	
