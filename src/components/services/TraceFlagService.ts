@@ -16,12 +16,12 @@ export class TraceFlagService extends AbstractSobjectService implements ITraceFl
 		this._debugLevelService = debugLevelService;
 	}
 
-	// public async retrieve(ids: string) : Promise<TraceFlag>;
-	// public async retrieve(ids: string[]) : Promise<TraceFlag[]>;
-	// public async retrieve(ids: any) : Promise<any> {
-	// 	if(Array.isArray(ids)) return await super.retrieve<TraceFlag[]>(ids);
-	// 	return await super.retrieve<TraceFlag>(ids);
-	// }
+	public async retrieve(ids: string) : Promise<TraceFlag>;
+	public async retrieve(ids: string[]) : Promise<TraceFlag[]>;
+	public async retrieve(ids: any) : Promise<any> {
+		if(Array.isArray(ids)) return await super.retrieve<TraceFlag[]>(ids);
+		return await super.retrieve<TraceFlag>(ids);
+	}
 
 	public async getTraceFlags(userId: string, fieldsToQuery?: string[], debugLevelFieldsToQuery?: string[]) : Promise<TraceFlag[]> {
 
