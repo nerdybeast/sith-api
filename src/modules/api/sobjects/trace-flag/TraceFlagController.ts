@@ -23,7 +23,7 @@ export class TraceFlagController {
 		
 		const [ traceFlagFieldNames, debugLevelFieldNames ] = await Promise.all([
 			traceFlagService.getSobjectFieldNames(),
-			traceFlagService.getSobjectFieldNames('DebugLevel')
+			debugLevelService.getSobjectFieldNames('DebugLevel')
 		]);
 		
 		const traceFlags = await traceFlagService.getTraceFlags(connection.details.userId, traceFlagFieldNames, debugLevelFieldNames);

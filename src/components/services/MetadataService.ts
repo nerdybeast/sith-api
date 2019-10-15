@@ -6,22 +6,22 @@ import { FileProperties } from '../../models/salesforce-metadata/FileProperties'
 import { CacheKeys } from '../../utilities/cache-helpers/CacheKeys';
 import { CacheDurationEnum } from '../../utilities/cache-helpers/CacheDurationEnum';
 import { IMetadataService } from './IMetadataService';
-import { CacheService } from '../cache/CacheService';
+import { Sobject } from '../../models/sobjects/Sobject';
 
-export class MetadataService extends SalesforceService implements IMetadataService {
+export class MetadataService extends SalesforceService<Sobject> implements IMetadataService {
 
 	protected connection: Connection;
 	private cache: ICache;
 
-	constructor(connection: Connection, cache: CacheService) {
+	constructor(connection: Connection, cache: ICache) {
 		super(connection);
 		this.connection = connection;
 		this.cache = cache;
 	}
 
-	public async listCustomObjectTypes() {
+	public async listCustomObjectTypes() : Promise<FileProperties[]> {
 
-		let listResult = await this.listMetadata<FileProperties[]>('CustomObject');
+		let listResult = await this.listMetadata('CustomObject');
 		listResult = listResult.map(x => new FileProperties(x));
 
 		return listResult;

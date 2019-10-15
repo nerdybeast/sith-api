@@ -14,7 +14,8 @@ export const redisClientProvider: Provider = {
 			url: process.env.REDIS_URL
 		});
 
-		//client.on('ready', () => console.log('Redis ready event...'));
+		client.on('ready', () => console.log('Redis ready event...'));
+		client.on('error', (err) => console.error('Redis error:', err));
 
 		return client;
 	}

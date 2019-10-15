@@ -20,7 +20,7 @@ import { SalesforceService } from './SalesforceService';
 import { ApiType } from '../../models/enums/ApiType';
 import { CacheDurationEnum } from '../../utilities/cache-helpers/CacheDurationEnum';
 
-export abstract class AbstractSobjectService extends SalesforceService {
+export abstract class AbstractSobjectService<T extends Sobject> extends SalesforceService<T> {
 
 	protected sobjectName: string;
 	protected connectionDetails: ConnectionDetails;
@@ -58,27 +58,27 @@ export abstract class AbstractSobjectService extends SalesforceService {
 
 		return fieldNames;
 	}
-
-	public async retrieve<T>(ids: string) : Promise<T>;
-	public async retrieve<T>(ids: string[]) : Promise<T[]>;
-	public async retrieve<T>(ids: any) : Promise<any> {
-		if(Array.isArray(ids)) return this._performCrudAction<T[]>(ids, CrudAction.RETRIEVE);
-		return this._performCrudAction<T>(ids, CrudAction.RETRIEVE);
-	}
-
-	public async query(fieldNames: string[] | string, whereClause?: string) : Promise<QueryResult> {
-
+	
+	public async query(fieldNames: string[] | string, whereClause?: string) : Promise<QueryResult<T>> {
+		
 		if(fieldNames === '*') fieldNames = await this.getSobjectFieldNames();
 		whereClause = whereClause || '';
-
+		
 		const sobjectMetadata = await this._describeSobjectBase(this.sobjectName);
 		const soql = `SELECT ${fieldNames} FROM ${this.sobjectName} ${whereClause}`;
 		return await this._query(soql, sobjectMetadata.isTooling);
 	}
-
-	public async search(sosl: string) : Promise<Sobject[]> {
+	
+	public async search(sosl: string) : Promise<T[]> {
 		const result = await this._search(sosl);
 		return result.searchRecords;
+	}
+
+	public async retrieve(ids: string) : Promise<T>;
+	public async retrieve(ids: string[]) : Promise<T[]>;
+	public async retrieve(ids: any) : Promise<any> {
+		if(Array.isArray(ids)) return this._performCrudAction<T[]>(ids, CrudAction.RETRIEVE);
+		return this._performCrudAction<T>(ids, CrudAction.RETRIEVE);
 	}
 
 	public async create(data: any) : Promise<CrudResult>;
@@ -109,7 +109,7 @@ export abstract class AbstractSobjectService extends SalesforceService {
 		return this._performCrudAction<CrudResult>(data, CrudAction.UPSERT);
 	}
 
-	private async _performCrudAction<T>(data: any, action: CrudAction) : Promise<T> {
+	private async _performCrudAction<U>(data: any, action: CrudAction) : Promise<U> {
 
 		this.debug.verbose(`_performCrudAction() parameters:`, { data, action });
 
@@ -122,7 +122,7 @@ export abstract class AbstractSobjectService extends SalesforceService {
 
 			result = camelCaseKeys(result, { deep: true });
 
-			return result as T;
+			return result as U;
 
 		} catch (error) {
 
@@ -133,13 +133,12 @@ export abstract class AbstractSobjectService extends SalesforceService {
 		}
 	}
 
-	private async _query(soql: string, isToolingQuery: boolean = false) : Promise<QueryResult> {
+	private async _query(soql: string, isToolingQuery: boolean = false) : Promise<QueryResult<T>> {
 
 		this.debug.verbose(`_query() parameters:`, { soql, isToolingQuery });
 
 		try {
 
-			//let queryResult = await (isToolingQuery ? this.conn.tooling.query(soql) : this.conn.query(soql));
 			let queryResult: any = await (isToolingQuery ? this.toolingQuery(soql) : this.standardQuery(soql));
 			this.debug.verbose(`Raw query result`, queryResult);
 
@@ -148,7 +147,7 @@ export abstract class AbstractSobjectService extends SalesforceService {
 			//force a mapping between these variations in our models so force camelCase here.
 			queryResult = camelCaseKeys(queryResult, { deep: true });
 
-			return queryResult as QueryResult;
+			return queryResult as QueryResult<T>;
 
 		} catch (error) {
 
@@ -158,7 +157,7 @@ export abstract class AbstractSobjectService extends SalesforceService {
 		}
 	}
 
-	private async _search(sosl: string, isTooling: boolean = false) : Promise<SearchResult> {
+	private async _search(sosl: string, isTooling: boolean = false) : Promise<SearchResult<T>> {
 
 		this.debug.verbose(`_search() parameters:`, { sosl, isTooling });
 

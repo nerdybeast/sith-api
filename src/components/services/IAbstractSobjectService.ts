@@ -2,12 +2,12 @@ import { QueryResult } from '../../models/query-result';
 import { Sobject } from '../../models/sobjects/Sobject';
 import { CrudResult } from '../../models/CrudResult';
 
-export interface IAbstractSobjectService {
+export interface IAbstractSobjectService<T extends Sobject> {
 	getSobjectFieldNames(sobjectName?: string) : Promise<string[]>;
-	retrieve<T>(ids: string) : Promise<T>;
-	retrieve<T>(ids: string[]) : Promise<T[]>;
-	retrieve<T>(ids: any) : Promise<any>;
-	query(fieldNames: string[] | string, whereClause?: string) : Promise<QueryResult>;
+	retrieve(ids: string) : Promise<T>;
+	retrieve(ids: string[]) : Promise<T[]>;
+	retrieve(ids: any) : Promise<any>;
+	query(fieldNames: string[] | string, whereClause?: string) : Promise<QueryResult<T>>;
 	search(sosl: string) : Promise<Sobject[]>;
 	create(data: any) : Promise<CrudResult>;
 	create(data: any[]) : Promise<CrudResult[]>;

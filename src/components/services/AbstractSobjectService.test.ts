@@ -5,17 +5,18 @@ import { generateMockConnection, generateGlobalDescribe } from '../../test-helpe
 import { CrudResult } from '../../models/CrudResult';
 import { ErrorCode } from '../../models/enums/error-code';
 import { MockCacheService } from '../cache/MockCacheService';
+import { Sobject } from '../../models/sobjects/Sobject';
 
 describe('AbstractSobjectService', () => {
 
-	let mockSobjectService: AbstractSobjectService;
+	let mockSobjectService: AbstractSobjectService<Sobject>;
 
 	beforeAll(() => {
 
 		generateGlobalDescribe('MockSobject');
 		const connection = generateMockConnection();
 	
-		class MockSobjectService extends AbstractSobjectService {
+		class MockSobjectService extends AbstractSobjectService<Sobject> {
 			constructor() {
 				super('MockSobject', connection, new MockCacheService());
 			}

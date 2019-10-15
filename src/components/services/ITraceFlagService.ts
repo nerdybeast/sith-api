@@ -2,7 +2,7 @@ import { IAbstractSobjectService } from './IAbstractSobjectService';
 import { TraceFlag } from '../../models/sobjects/TraceFlag';
 import { CrudResult } from '../../models/CrudResult';
 
-export interface ITraceFlagService extends IAbstractSobjectService {
+export interface ITraceFlagService extends IAbstractSobjectService<TraceFlag> {
 	getTraceFlags(userId: string, fieldsToQuery?: string[], debugLevelFieldsToQuery?: string[]) : Promise<TraceFlag[]>;
 	create(traceFlags: TraceFlag) : Promise<CrudResult>;
 	create(traceFlags: TraceFlag[]) : Promise<CrudResult[]>;

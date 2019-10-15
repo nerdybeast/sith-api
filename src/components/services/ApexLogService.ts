@@ -3,24 +3,17 @@ import { ApexLog } from '../../models/sobjects/ApexLog';
 import got from 'got';
 import { Connection } from '../../models/Connection';
 import { ICache } from '../../interfaces/ICache';
+import { IApexLogService } from './IApexLogService';
 
-export class ApexLogService extends AbstractSobjectService {
+export class ApexLogService extends AbstractSobjectService<ApexLog> implements IApexLogService {
 
 	constructor(connection: Connection, cache: ICache) {
 		super('ApexLog', connection, cache);
 	}
 
-	public async retrieve(ids: string) : Promise<ApexLog>;
-	public async retrieve(ids: string[]) : Promise<ApexLog[]>;
-	public async retrieve(ids: any) : Promise<any> {
-		if(Array.isArray(ids)) return await super.retrieve<ApexLog[]>(ids);
-		return await super.retrieve<ApexLog>(ids);
-	}
-
 	async getByUserId(userId: string, fieldsToQuery: string[], limit: number = 25) : Promise<ApexLog[]> {
 		const apexLogQueryResult = await this.query(fieldsToQuery, `Where LogUserId = '${userId}' ORDER BY StartTime DESC LIMIT ${limit}`);
-		const apexLogRecords = apexLogQueryResult.records as ApexLog[];
-		return apexLogRecords;
+		return apexLogQueryResult.records;
 	}
 
 	async attachBody(apexLogRecords: ApexLog[]) : Promise<ApexLog[]> {

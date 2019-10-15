@@ -37,7 +37,7 @@ export class SearchService {
 
 			const genericSobjectService: IGenericSobjectService = this.connectionFactory.createGenericSobjectService(sobjectDescribeBase.name, this.connection);
 
-			const sobject = await genericSobjectService.retrieve<Sobject>(identifier);
+			const sobject = await genericSobjectService.retrieve(identifier);
 			results = [sobject];
 
 		} else {
@@ -54,6 +54,7 @@ export class SearchService {
 			results = soslResults;
 		}
 
+		//Little hack to remove duplicates from an array
 		let sobjectNames = results.map(x => x.attributes.type);
 		sobjectNames = Array.from(new Set(sobjectNames));
 
@@ -63,7 +64,7 @@ export class SearchService {
 		//TODO: use array reduce to make less calls to Salesforce, calling retrieve for every record is inefficient.
 		const retrievePromises = results.map(sobject => {
 			const genericSobjectService: IGenericSobjectService = this.connectionFactory.createGenericSobjectService(sobject.attributes.type, this.connection);
-			return genericSobjectService.retrieve<Sobject>(sobject.id);
+			return genericSobjectService.retrieve(sobject.id);
 		});
 
 		const records = await Promise.all(retrievePromises);

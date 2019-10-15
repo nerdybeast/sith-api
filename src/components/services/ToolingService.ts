@@ -5,8 +5,9 @@ import { SobjectDescribeBase } from '../../models/salesforce-metadata/SobjectDes
 import { SobjectDescribe } from '../../models/salesforce-metadata/SobjectDescribe';
 import { IToolingService } from './IToolingService';
 import { ICache } from '../../interfaces/ICache';
+import { Sobject } from '../../models/sobjects/Sobject';
 
-export class ToolingService extends AbstractSobjectService implements IToolingService {
+export class ToolingService extends AbstractSobjectService<Sobject> implements IToolingService {
 
 	constructor(connection: Connection, cache: ICache) {
 		super('Tooling', connection, cache);

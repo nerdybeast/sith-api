@@ -9,4 +9,5 @@ export class Sobject {
 	lastModifiedById: string;
 	lastModifiedDate: string;
 	systemModstamp: string;
+	[key: string]: any;
 }
