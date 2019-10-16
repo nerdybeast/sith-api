@@ -1,8 +1,10 @@
 import { Test } from '@nestjs/testing';
 import { UserService } from './user-service';
-import { AuthService } from '../../components/services/AuthService';
+import { AuthService } from '../../components/auth/AuthService';
 import { ClientCredentials } from '../../models/client-credentials';
 import { Profile } from '../../models/profile';
+import { createConfigServiceProvider } from '../../test-helpers/config';
+import { createGotProvider } from '../../test-helpers/got';
 
 describe('UserService', () => {
 
@@ -14,7 +16,9 @@ describe('UserService', () => {
 		const testingModule = await Test.createTestingModule({
 			providers: [
 				UserService,
-				AuthService
+				AuthService,
+				createConfigServiceProvider(),
+				createGotProvider()
 			]
 		}).compile();
 

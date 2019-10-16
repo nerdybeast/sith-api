@@ -1,14 +1,17 @@
 import { AbstractSobjectService } from './AbstractSobjectService';
 import { ApexLog } from '../../models/sobjects/ApexLog';
-import got from 'got';
+import Got from 'got';
 import { Connection } from '../../models/Connection';
 import { ICache } from '../../interfaces/ICache';
 import { IApexLogService } from './IApexLogService';
 
 export class ApexLogService extends AbstractSobjectService<ApexLog> implements IApexLogService {
 
-	constructor(connection: Connection, cache: ICache) {
+	private got: typeof Got;
+
+	constructor(connection: Connection, cache: ICache, got: typeof Got) {
 		super('ApexLog', connection, cache);
+		this.got = got;
 	}
 
 	async getByUserId(userId: string, fieldsToQuery: string[], limit: number = 25) : Promise<ApexLog[]> {
@@ -49,7 +52,7 @@ export class ApexLogService extends AbstractSobjectService<ApexLog> implements I
 	async getDebugLog(id: string) : Promise<string> {
 		try {
 			
-			const response = await got.get(`${this.connectionDetails.instanceUrl}/services/data/v${this.connectionDetails.orgVersion}/tooling/sobjects/ApexLog/${id}/Body`, {
+			const response = await this.got.get(`${this.connectionDetails.instanceUrl}/services/data/v${this.connectionDetails.orgVersion}/tooling/sobjects/ApexLog/${id}/Body`, {
 				headers: { Authorization: `Bearer ${this.connectionDetails.sessionId}` }
 			});
 	

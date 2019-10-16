@@ -4,6 +4,7 @@ import { ConnectionDetails } from '../../../../models/ConnectionDetails';
 import { IApexLogService } from '../../../../components/services/IApexLogService';
 import { ApexLogsUpdateIPC } from '../../../../models/ipc/ApexLogsUpdateIPC';
 import { ApexLog } from '../../../../models/sobjects/ApexLog';
+import { ConfigService } from '../../../../components/config/ConfigService';
 
 export class ApexLogPoller extends EventEmitter {
 
@@ -11,12 +12,14 @@ export class ApexLogPoller extends EventEmitter {
 	private connectionDetails: ConnectionDetails;
 	private apexLogService: IApexLogService;
 	private existingApexLogIds: string[];
+	private configService: ConfigService;
 
-	constructor(socketId: string, connectionDetails: ConnectionDetails, apexLogService: IApexLogService) {
+	constructor(socketId: string, connectionDetails: ConnectionDetails, apexLogService: IApexLogService, configService: ConfigService) {
 		super();
 		this.socketIds.push(socketId);
 		this.connectionDetails = connectionDetails;
 		this.apexLogService = apexLogService;
+		this.configService = configService;
 	}
 
 	public get HasClients() : boolean {
@@ -62,6 +65,6 @@ export class ApexLogPoller extends EventEmitter {
 			this.emit('apexLogsUpdate', apexLogsUpdateIPC);
 		}
 
-		setTimeout(() => this.poll(), Number(process.env.TRACE_FLAG_POLLING_RATE || '5000'));
+		setTimeout(() => this.poll(), this.configService.APEX_LOG_POLLING_RATE);
 	}
 }

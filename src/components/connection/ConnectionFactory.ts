@@ -1,10 +1,11 @@
+import Got from 'got';
 import { Connection } from '../../models/Connection';
 import { MetadataService } from '../services/MetadataService';
 import { IMetadataService } from '../services/IMetadataService';
 import { IToolingService } from '../services/IToolingService';
 import { ToolingService } from '../services/ToolingService';
 import { CacheService } from '../cache/CacheService';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { ApexLogService } from '../services/ApexLogService';
 import { IApexLogService } from '../services/IApexLogService';
 import { GenericSobjectService } from '../services/GenericSobjectService';
@@ -18,9 +19,11 @@ import { TraceFlagService } from '../services/TraceFlagService';
 export class ConnectionFactory {
 
 	private cacheService: CacheService;
+	private got: typeof Got;
 
-	constructor(cacheService: CacheService) {
+	constructor(cacheService: CacheService, @Inject('got') got: typeof Got) {
 		this.cacheService = cacheService;
+		this.got = got;
 	}
 
 	public createMetadataService(connection: Connection) : IMetadataService {
@@ -32,7 +35,7 @@ export class ConnectionFactory {
 	}
 
 	public createApexLogService(connection: Connection) : IApexLogService {
-		return new ApexLogService(connection, this.cacheService);
+		return new ApexLogService(connection, this.cacheService, this.got);
 	}
 
 	public createGenericSobjectService(sobjectName: string, connection: Connection) : IGenericSobjectService {

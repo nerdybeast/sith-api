@@ -1,17 +1,15 @@
 import { Module, Provider } from '@nestjs/common';
 import redis from 'redis';
 import { CacheService } from './CacheService';
-// import { promisify } from 'util';
-
-// promisify(redis.RedisClient);
-// promisify(redis.Multi);
+import { ConfigService } from '../config/ConfigService';
 
 export const redisClientProvider: Provider = {
 	provide: 'redisClient',
-	useFactory: () => {
+	inject: [ConfigService],
+	useFactory: (configService: ConfigService) => {
 
 		const client = redis.createClient({
-			url: process.env.REDIS_URL
+			url: configService.REDIS_URL
 		});
 
 		client.on('ready', () => console.log('Redis ready event...'));

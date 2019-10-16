@@ -37,7 +37,7 @@ export class CacheService implements ICache {
 					return reject(err);
 				}
 	
-				return resolve(JSON.parse(reply));
+				return resolve();
 			});
 
 		});

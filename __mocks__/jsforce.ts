@@ -27,7 +27,7 @@ let queryResult = generateDefaultQueryResult([sobject]);
 
 let queryError: JsforceError;
 
-function generateDefaultQueryResult(records: any[]) : QueryResult {
+function generateDefaultQueryResult(records: any[]) : QueryResult<Sobject> {
 	const defaultQueryResult = new QueryResult();
 	defaultQueryResult.done = true;
 	defaultQueryResult.totalSize = records.length;
@@ -43,7 +43,7 @@ jsforce.__describe = (mockSobjectDescribe: SobjectDescribe) => {
 	sobjectDescribe = mockSobjectDescribe;
 };
 
-jsforce.__setQueryResult = (mockQueryResult?: QueryResult, error?: JsforceError) => {
+jsforce.__setQueryResult = (mockQueryResult?: QueryResult<Sobject>, error?: JsforceError) => {
 	queryResult = mockQueryResult;
 	queryError = error;
 };

@@ -6,6 +6,7 @@ import { ITraceFlagService } from '../../../../components/services/ITraceFlagSer
 import { TraceFlag } from '../../../../models/sobjects/TraceFlag';
 import { UserTraceFlags } from '../../../../models/ipc/UserTraceFlags';
 import { TraceFlagsUpdateIPC } from '../../../../models/ipc/TraceFlagsUpdateIPC';
+import { ConfigService } from '../../../../components/config/ConfigService';
 
 export class TraceFlagPoller extends EventEmitter {
 
@@ -14,18 +15,21 @@ export class TraceFlagPoller extends EventEmitter {
 	private debugLevelService: IDebugLevelService;
 	private traceFlagService: ITraceFlagService;
 	private existingTraceFlags: TraceFlag[];
+	private configService: ConfigService;
 
 	constructor(
 		socketId: string,
 		connectionDetails: ConnectionDetails,
 		debugLevelService: IDebugLevelService,
-		traceFlagService: ITraceFlagService
+		traceFlagService: ITraceFlagService,
+		configService: ConfigService
 	) {
 		super();
 		this.socketIds.push(socketId);
 		this.connectionDetails = connectionDetails;
 		this.debugLevelService = debugLevelService;
 		this.traceFlagService = traceFlagService;
+		this.configService = configService;
 	}
 
 	public addSocketId(socketId: string) : void {
@@ -80,10 +84,9 @@ export class TraceFlagPoller extends EventEmitter {
 			const userTraceFlags = new UserTraceFlags(this.connectionDetails.userId, traceFlags);
 	
 			const traceFlagsUpdateIPC = new TraceFlagsUpdateIPC([userTraceFlags], traceFlagFieldNames, debugLevelFieldNames);
-			//console.info('userTraceFlags ==>', userTraceFlags);
 			this.emit('traceFlagsUpdate', traceFlagsUpdateIPC);
 		}
 
-		setTimeout(() => this.poll(), Number(process.env.TRACE_FLAG_POLLING_RATE || '5000'));
+		setTimeout(() => this.poll(), this.configService.TRACE_FLAG_POLLING_RATE);
 	}
 }

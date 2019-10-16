@@ -33,7 +33,7 @@ export class SearchService {
 		let results: Sobject[];
 
 		//Will be true if the user entered an id into the search.
-		if(sobjectDescribeBase && identifier.length >= 15) {
+		if(sobjectDescribeBase && identifier.length >= 15 && identifier.length <= 18) {
 
 			const genericSobjectService: IGenericSobjectService = this.connectionFactory.createGenericSobjectService(sobjectDescribeBase.name, this.connection);
 
