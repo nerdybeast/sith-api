@@ -5,6 +5,7 @@ import bodyParser from 'body-parser';
 import { ApplicationModule } from './modules/app-module';
 import { Debug } from './utilities/debug';
 import { ConfigService } from './components/config/ConfigService';
+import { Logger } from '@nestjs/common';
 
 (async function bootstrap() {
 
@@ -17,7 +18,8 @@ import { ConfigService } from './components/config/ConfigService';
 	//Tell the json body parser to parse all request bodies that contain a Content-Type matching this expression.
 	app.use(bodyParser.json({ type: ['application/json', 'application/vnd.api+json'] }));
 
-	await app.listen(configService.PORT, () => console.log(`\nApi is running on port ${configService.PORT}...\n`));
+	const logger = new Logger('Bootstrap');
+	await app.listen(configService.PORT, () => logger.log(`Api is running on port ${configService.PORT}...`));
 
 	const debug = new Debug('server');
 	debug.info('main process id', process.pid);

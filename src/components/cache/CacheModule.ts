@@ -1,4 +1,4 @@
-import { Module, Provider } from '@nestjs/common';
+import { Module, Provider, Logger } from '@nestjs/common';
 import redis from 'redis';
 import { CacheService } from './CacheService';
 import { ConfigService } from '../config/ConfigService';
@@ -12,7 +12,9 @@ export const redisClientProvider: Provider = {
 			url: configService.REDIS_URL
 		});
 
-		client.on('ready', () => console.log('Redis ready event...'));
+		const logger = new Logger('Redis');
+
+		client.on('ready', () => logger.log('ready'));
 		client.on('error', (err) => console.error('Redis error:', err));
 
 		return client;

@@ -8,7 +8,7 @@
     },
     "rules": {
         "eofline": false,
-        "quotemark": [true, "single"],
+        "quotemark": false,
         "member-access": [false],
         "ordered-imports": [false],
         "max-line-length": [false],
