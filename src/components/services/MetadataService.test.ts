@@ -1,5 +1,6 @@
 import { generateMockConnection } from '../../test-helpers';
 import { MetadataService } from './MetadataService';
+import { MockCacheService } from '../cache/MockCacheService';
 
 describe('MetadataService', () => {
 
@@ -7,7 +8,7 @@ describe('MetadataService', () => {
 
 	beforeAll(() => {
 		const connection = generateMockConnection();
-		metadataService = new MetadataService(connection);
+		metadataService = new MetadataService(connection, new MockCacheService());
 	});
 
 	afterEach(() => {

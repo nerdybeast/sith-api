@@ -1,5 +1,7 @@
-export class QueryResult {
+import { Sobject } from './sobjects/Sobject';
+
+export class QueryResult<T extends Sobject> {
 	done: boolean;
-	records: any[];
+	records: T[];
 	totalSize: number;
 }

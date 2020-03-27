@@ -1,9 +1,7 @@
 import { Module, Controller, Get, Param, Query } from '@nestjs/common';
 import { UserInfo } from '../../../decorators/UserInfoDecorator';
-import { ToolingService } from '../../../components/services/ToolingService';
 import { SobjectDescribe } from '../../../models/salesforce-metadata/SobjectDescribe';
 import { Connection } from '../../../models/Connection';
-import { MetadataService } from '../../../components/services/MetadataService';
 import { JsonApiService } from '../../../components/services/JsonApiService';
 import { JsonApiDocument } from '../../../models/JsonApiDocument';
 import { ActionOverride } from '../../../models/salesforce-metadata/ActionOverride';
@@ -11,14 +9,25 @@ import { MetadataActionOverride } from '../../../models/salesforce-metadata/Meta
 import { ActionOverrideDto, SobjectDescribeDto, FieldDto, RecordTypeDto, DisplayTypeEnum } from '../../../models/dto/SobjectDescribeDto';
 import { RecordTypeInfo } from '../../../models/salesforce-metadata/RecordTypeInfo';
 import { RecordType } from '../../../models/salesforce-metadata/RecordType';
+import { ConnectionModule } from '../../../components/connection/ConnectionModule';
+import { IMetadataService } from '../../../components/services/IMetadataService';
+import { ConnectionFactory } from '../../../components/connection/ConnectionFactory';
+import { IToolingService } from '../../../components/services/IToolingService';
 
 @Controller('api/metadata/describe')
 export class DescribeController {
 
+	private connectionFactory: ConnectionFactory;
+
+	//REMINDER: Nest can only DI concrete types
+	constructor(connectionFactory: ConnectionFactory) {
+		this.connectionFactory = connectionFactory;
+	}
+
 	@Get('/global')
 	async getGlobalDescribe(@UserInfo() connection: Connection, @Query('q') q: string = null, @Query('start') start: number = 0, @Query('count') count: number = 20) {
-		
-		const toolingService = new ToolingService(connection);
+
+		const toolingService: IToolingService = this.connectionFactory.createToolingService(connection);
 		let sobjectDescribeBase = await toolingService.globalDescribe();
 
 		q = (q || '').toLowerCase();
@@ -40,10 +49,10 @@ export class DescribeController {
 	}
 
 	@Get('/:sobjectName')
-	async getSobjectDescribe(@UserInfo() connection: Connection, @Param('sobjectName') sobjectName) : Promise<JsonApiDocument<SobjectDescribe>> {
-		
-		const toolingService = new ToolingService(connection);
-		const metadataService = new MetadataService(connection);
+	async getSobjectDescribe(@UserInfo() connection: Connection, @Param('sobjectName') sobjectName: string) : Promise<JsonApiDocument<SobjectDescribe>> {
+
+		const toolingService: IToolingService = this.connectionFactory.createToolingService(connection);
+		const metadataService: IMetadataService = this.connectionFactory.createMetadataService(connection);
 
 		const customTypes = await metadataService.listCustomObjectTypes();
 		const fileProperties = customTypes.find(x => x.fullName === sobjectName);
@@ -105,7 +114,12 @@ export class DescribeController {
 }
 
 @Module({
-	controllers: [DescribeController]
+	imports: [
+		ConnectionModule
+	],
+	controllers: [
+		DescribeController
+	]
 })
 export class DescribeModule { }
 

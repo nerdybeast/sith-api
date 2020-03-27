@@ -1,16 +1,23 @@
 import { Controller, Body, Get, Post } from '@nestjs/common';
 import { UserInfo } from '../../../../decorators/UserInfoDecorator';
-import * as jsonapi from 'jsonapi-serializer';
-import { ApexLogService } from '../../../../components/services/ApexLogService';
+import jsonapi from 'jsonapi-serializer';
 import { Connection } from '../../../../models/Connection';
+import { ConnectionFactory } from '../../../../components/connection/ConnectionFactory';
+import { IApexLogService } from '../../../../components/services/IApexLogService';
 
 @Controller('api/sobjects')
 export class ApexLogController {
 
+	private connectionFactory: ConnectionFactory;
+
+	constructor(connectionFactory: ConnectionFactory) {
+		this.connectionFactory = connectionFactory;
+	}
+
 	@Get('/apex-logs')
 	async apexLogsAsync(@UserInfo() connection: Connection) : Promise<any> {
 
-		const apexLogService = new ApexLogService(connection);
+		const apexLogService: IApexLogService = this.connectionFactory.createApexLogService(connection);
 		const fieldNames = await apexLogService.getSobjectFieldNames();
 		const apexLogs = await apexLogService.getApexLogs(connection.details.userId, fieldNames);
 
@@ -25,7 +32,7 @@ export class ApexLogController {
 	@Post('/apex-log-body')
 	async debugLogAsync(@UserInfo() connection: Connection, @Body() body) {
 
-		const apexLogService = new ApexLogService(connection);
+		const apexLogService: IApexLogService = this.connectionFactory.createApexLogService(connection);
 
 		const apexLogBody = await apexLogService.getDebugLog(body.apexLogId);
 		return apexLogBody;

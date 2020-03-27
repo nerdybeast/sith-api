@@ -18,7 +18,7 @@ export class MetadataActionOverride {
 		this.formFactor = rawJson.formFactor || null;
 		
 		//This value is returned as a string from the metadata api.
-		this.skipRecordTypeSelect = toBoolean(rawJson.skipRecordTypeSelect, null);
+		this.skipRecordTypeSelect = toBoolean(rawJson.skipRecordTypeSelect);
 		
 		this.type = rawJson.type || null;
 	}

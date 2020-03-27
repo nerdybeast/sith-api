@@ -5,7 +5,7 @@ import { Request, Response } from 'express';
 @Injectable()
 export class ConnectionDetailsMiddleware implements NestMiddleware {
 	
-	use(req: Request, res: Response, next: Function) {
+	use(req: Request, _res: Response, next: () => void) {
 
 		const connectionDetails = new ConnectionDetails();
 		connectionDetails.instanceUrl = req.headers['instance-url'] as string;
@@ -18,7 +18,8 @@ export class ConnectionDetailsMiddleware implements NestMiddleware {
 		req.connectionDetails = connectionDetails;
 
 		//@ts-ignore - "user" does not exist on the express Request object but we're throwing it on there anyway...
-		req.user = connectionDetails;
+		//This allows user tracking for Rollbar error reporting.
+		req.user = { id: connectionDetails.userId };
 
 		next();
 	}

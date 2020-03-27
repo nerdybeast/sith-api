@@ -1,20 +1,27 @@
 import { Controller, Post, Body } from '@nestjs/common';
 import { UserInfo } from '../../../decorators/UserInfoDecorator';
 import { AnonymousApexDto } from '../../../models/dto/AnonymousApexDto';
-import { ToolingService } from '../../../components/services/ToolingService';
-import { ApexLogService } from '../../../components/services/ApexLogService';
-import * as jsonapi from 'jsonapi-serializer';
+import jsonapi from 'jsonapi-serializer';
 import { AnonymousApexResult } from '../../../models/salesforce-metadata/AnonymousApexResult';
 import { Connection } from '../../../models/Connection';
+import { ConnectionFactory } from '../../../components/connection/ConnectionFactory';
+import { IToolingService } from '../../../components/services/IToolingService';
+import { IApexLogService } from '../../../components/services/IApexLogService';
 
 @Controller('api/tooling')
 export class ToolingController {
 
+	private connectionFactory: ConnectionFactory;
+
+	constructor(connectionFactory: ConnectionFactory) {
+		this.connectionFactory = connectionFactory;
+	}
+
 	@Post('/executeAnonymousApex')
 	async traceFlagsAsync(@UserInfo() connection: Connection, @Body() body: AnonymousApexDto) {
 
-		const toolingService = new ToolingService(connection);
-		const apexLogService = new ApexLogService(connection);
+		const toolingService: IToolingService = this.connectionFactory.createToolingService(connection);
+		const apexLogService: IApexLogService = this.connectionFactory.createApexLogService(connection);
 
 		const [anonymousApexResult, apexLogFieldNames] = await Promise.all([
 			toolingService.executeAnonymousApex(body.apex),

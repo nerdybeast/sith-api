@@ -1,6 +1,6 @@
 import { Controller, Get, Headers } from '@nestjs/common';
 import { OrgService } from './org-service';
-import * as jsonapi from 'jsonapi-serializer';
+import jsonapi from 'jsonapi-serializer';
 
 @Controller('api/org')
 export class OrgController {

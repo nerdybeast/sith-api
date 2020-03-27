@@ -1,25 +1,23 @@
 import { AbstractSobjectService } from './AbstractSobjectService';
 import { ApexLog } from '../../models/sobjects/ApexLog';
-import * as got from 'got';
+import Got from 'got';
 import { Connection } from '../../models/Connection';
+import { ICache } from '../../interfaces/ICache';
+import { IApexLogService } from './IApexLogService';
+import { DebugFactory } from '../../third-party-modules/debug/DebugFactory';
 
-export class ApexLogService extends AbstractSobjectService {
-	
-	constructor(connection: Connection) {
-		super('ApexLog', connection);
-	}
+export class ApexLogService extends AbstractSobjectService<ApexLog> implements IApexLogService {
 
-	public async retrieve(ids: string) : Promise<ApexLog>;
-	public async retrieve(ids: string[]) : Promise<ApexLog[]>;
-	public async retrieve(ids: any) : Promise<any> {
-		if(Array.isArray(ids)) return await super.retrieve<ApexLog[]>(ids);
-		return await super.retrieve<ApexLog>(ids);
+	private got: typeof Got;
+
+	constructor(connection: Connection, cache: ICache, got: typeof Got, debugFactory: DebugFactory) {
+		super('ApexLog', connection, cache, debugFactory);
+		this.got = got;
 	}
 
 	async getByUserId(userId: string, fieldsToQuery: string[], limit: number = 25) : Promise<ApexLog[]> {
 		const apexLogQueryResult = await this.query(fieldsToQuery, `Where LogUserId = '${userId}' ORDER BY StartTime DESC LIMIT ${limit}`);
-		const apexLogRecords = apexLogQueryResult.records as ApexLog[];
-		return apexLogRecords;
+		return apexLogQueryResult.records;
 	}
 
 	async attachBody(apexLogRecords: ApexLog[]) : Promise<ApexLog[]> {
@@ -42,9 +40,9 @@ export class ApexLogService extends AbstractSobjectService {
 
 	async getApexLogs(userId: string, fieldsToQuery: string[], limit?: number) : Promise<ApexLog[]> {
 		
-		this.debug.verbose('getApexLogs() parameters:');
-		this.debug.verbose('userId', userId);
-		this.debug.verbose('fieldsToQuery', fieldsToQuery);
+		this.debugService.verbose('getApexLogs() parameters:');
+		this.debugService.verbose('userId', userId);
+		this.debugService.verbose('fieldsToQuery', fieldsToQuery);
 		
 		const apexLogRecords = await this.getByUserId(userId, fieldsToQuery, limit);
 		const apexLogs = await this.attachBody(apexLogRecords);
@@ -55,7 +53,7 @@ export class ApexLogService extends AbstractSobjectService {
 	async getDebugLog(id: string) : Promise<string> {
 		try {
 			
-			const response = await got.get(`${this.connectionDetails.instanceUrl}/services/data/v${this.connectionDetails.orgVersion}/tooling/sobjects/ApexLog/${id}/Body`, {
+			const response = await this.got.get(`${this.connectionDetails.instanceUrl}/services/data/v${this.connectionDetails.orgVersion}/tooling/sobjects/ApexLog/${id}/Body`, {
 				headers: { Authorization: `Bearer ${this.connectionDetails.sessionId}` }
 			});
 	
@@ -66,7 +64,7 @@ export class ApexLogService extends AbstractSobjectService {
 			return response.body.trim();
 
 		} catch (error) {
-			this.debug.error(`Error fetching the debug log body for "${id}"`, error);
+			this.debugService.error(`Error fetching the debug log body for "${id}"`, error);
 			throw error;
 		}
 	}

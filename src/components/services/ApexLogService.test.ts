@@ -2,6 +2,10 @@ import { ApexLogService } from './ApexLogService';
 import { QueryResult } from '../../models/query-result';
 import { generateMockConnection, generateGlobalDescribe } from '../../test-helpers';
 import { ApexLog } from '../../models/sobjects/ApexLog';
+import { MockCacheService } from '../cache/MockCacheService';
+import got from 'got';
+import debug from 'debug';
+import { DebugFactory } from '../../third-party-modules/debug/DebugFactory';
 
 describe('ApexLogService', () => {
 
@@ -12,7 +16,7 @@ describe('ApexLogService', () => {
 		generateGlobalDescribe('ApexLog');
 
 		const connection = generateMockConnection();
-		apexLogService = new ApexLogService(connection);
+		apexLogService = new ApexLogService(connection, new MockCacheService(), got, new DebugFactory(debug));
 	});
 
 	afterEach(() => {

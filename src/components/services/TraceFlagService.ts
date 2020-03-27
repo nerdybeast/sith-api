@@ -1,33 +1,29 @@
 import { AbstractSobjectService } from './AbstractSobjectService';
 import { TraceFlag } from '../../models/sobjects/TraceFlag';
 import { CrudResult } from '../../models/CrudResult';
-import { DebugLevelService } from './DebugLevelService';
-import * as jsonapi from 'jsonapi-serializer';
+import jsonapi from 'jsonapi-serializer';
 import { Connection } from '../../models/Connection';
+import { ICache } from '../../interfaces/ICache';
+import { ITraceFlagService } from './ITraceFlagService';
+import { IDebugLevelService } from './IDebugLevelService';
+import { DebugFactory } from '../../third-party-modules/debug/DebugFactory';
 
-export class TraceFlagService extends AbstractSobjectService {
+export class TraceFlagService extends AbstractSobjectService<TraceFlag> implements ITraceFlagService {
 
-	private readonly _debugLevelService: DebugLevelService;
+	private readonly _debugLevelService: IDebugLevelService;
 
-	constructor(connection: Connection, debugLevelService: DebugLevelService) {
-		super('TraceFlag', connection);
+	constructor(connection: Connection, cache: ICache, debugLevelService: IDebugLevelService, debugFactory: DebugFactory) {
+		super('TraceFlag', connection, cache, debugFactory);
 		this._debugLevelService = debugLevelService;
-	}
-
-	public async retrieve(ids: string) : Promise<TraceFlag>;
-	public async retrieve(ids: string[]) : Promise<TraceFlag[]>;
-	public async retrieve(ids: any) : Promise<any> {
-		if(Array.isArray(ids)) return await super.retrieve<TraceFlag[]>(ids);
-		return await super.retrieve<TraceFlag>(ids);
 	}
 
 	public async getTraceFlags(userId: string, fieldsToQuery?: string[], debugLevelFieldsToQuery?: string[]) : Promise<TraceFlag[]> {
 
-		this.debug.verbose('getTraceFlags() parameters:', { userId, fieldsToQuery });
+		this.debugService.verbose('getTraceFlags() parameters:', { userId, fieldsToQuery });
 
 		fieldsToQuery = fieldsToQuery || await this.getSobjectFieldNames();
 		const traceFlagQueryResult = await this.query(fieldsToQuery, `Where TracedEntityId = '${userId}' Or CreatedById = '${userId}'`);
-		const traceFlags = traceFlagQueryResult.records as TraceFlag[];
+		const traceFlags = traceFlagQueryResult.records;
 
 		const debugLevelIds = traceFlags.map(x => x.debugLevelId);
 		debugLevelFieldsToQuery = debugLevelFieldsToQuery || await this.getSobjectFieldNames('DebugLevel');
@@ -41,6 +37,10 @@ export class TraceFlagService extends AbstractSobjectService {
 		return traceFlags;
 	}
 
+	/**
+	 * Overrides the basic sobject create method because trace flags have to be created a certain way
+	 * @param traceFlags The trace flags to be created
+	 */
 	public async create(traceFlags: TraceFlag) : Promise<CrudResult>;
 	public async create(traceFlags: TraceFlag[]) : Promise<CrudResult[]>;
 	public async create(traceFlags: any) : Promise<any> {
@@ -54,11 +54,15 @@ export class TraceFlagService extends AbstractSobjectService {
 		return await super.create(traceFlags);
 	}
 
+	/**
+	 * Overrides the default sobject update method because trace flags have to be updated a certain way.
+	 * @param traceFlags The trace flags to be updated
+	 */
 	public async update(traceFlags: TraceFlag) : Promise<CrudResult>;
 	public async update(traceFlags: TraceFlag[]) : Promise<CrudResult[]>;
 	public async update(traceFlags: any) : Promise<any> {
 
-		this.debug.verbose('updateTraceFlag() parameters:', { traceFlags });
+		this.debugService.verbose('updateTraceFlag() parameters:', { traceFlags });
 
 		if(Array.isArray(traceFlags)) {
 			traceFlags = traceFlags.map(tf => this.transformForUpdate(tf));

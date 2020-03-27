@@ -1,24 +1,27 @@
-import { SalesforceService } from './SalesforceService';
+import { SalesforceService } from '../services/SalesforceService';
 import { Connection } from '../../models/Connection';
 import { CustomObjectReadResult } from '../../models/salesforce-metadata/CustomObjectReadResult';
 import { ICache } from '../../interfaces/ICache';
-import { CacheFactory } from '../factories/cache-factory';
 import { FileProperties } from '../../models/salesforce-metadata/FileProperties';
 import { CacheKeys } from '../../utilities/cache-helpers/CacheKeys';
 import { CacheDurationEnum } from '../../utilities/cache-helpers/CacheDurationEnum';
+import { IMetadataService } from './IMetadataService';
+import { Sobject } from '../../models/sobjects/Sobject';
 
-export class MetadataService extends SalesforceService {
+export class MetadataService extends SalesforceService<Sobject> implements IMetadataService {
 
+	protected connection: Connection;
 	private cache: ICache;
 
-	constructor(protected connection: Connection) {
+	constructor(connection: Connection, cache: ICache) {
 		super(connection);
-		this.cache = CacheFactory.getCache();
+		this.connection = connection;
+		this.cache = cache;
 	}
 
-	public async listCustomObjectTypes() {
+	public async listCustomObjectTypes() : Promise<FileProperties[]> {
 
-		let listResult = await this.listMetadata<FileProperties[]>('CustomObject');
+		let listResult = await this.listMetadata('CustomObject');
 		listResult = listResult.map(x => new FileProperties(x));
 
 		return listResult;

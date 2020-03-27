@@ -3,12 +3,10 @@ import camelCaseKeys = require('camelcase-keys');
 import camelCase = require('lodash.camelcase');
 
 import { UnauthorizedException, ForbiddenException, BadRequestException, NotFoundException } from '@nestjs/common';
-import { CacheFactory } from '../factories/cache-factory';
 import { ICache } from '../../interfaces/ICache';
 import { ConnectionDetails } from '../../models/ConnectionDetails';
 import { QueryResult } from '../../models/query-result';
 import { SobjectDescribe } from '../../models/salesforce-metadata/SobjectDescribe';
-import { Debug } from '../../utilities/debug';
 import { CrudResult } from '../../models/CrudResult';
 import { SobjectDescribeBase } from '../../models/salesforce-metadata/SobjectDescribeBase';
 import { CrudAction } from '../../models/enums/crud-action';
@@ -20,26 +18,28 @@ import { SearchResult } from '../../models/SearchResult';
 import { SalesforceService } from './SalesforceService';
 import { ApiType } from '../../models/enums/ApiType';
 import { CacheDurationEnum } from '../../utilities/cache-helpers/CacheDurationEnum';
+import { DebugFactory } from '../../third-party-modules/debug/DebugFactory';
+import { DebugService } from '../../third-party-modules/debug/DebugService';
 
-export abstract class AbstractSobjectService extends SalesforceService {
+export abstract class AbstractSobjectService<T extends Sobject> extends SalesforceService<T> {
 
 	protected sobjectName: string;
 	protected connectionDetails: ConnectionDetails;
 	protected cache: ICache;
 	protected conn: any;
-	protected debug: Debug;
+	protected debugService: DebugService;
 
-	constructor(sobjectName: string, connection: Connection) {
+	constructor(sobjectName: string, connection: Connection, cache: ICache, debugFactory: DebugFactory) {
 
 		super(connection);
 
 		this.sobjectName = sobjectName;
 		this.connectionDetails = connection.details;
-		this.cache = CacheFactory.getCache();
+		this.cache = cache;
 
 		this.conn = connection.jsforce;
 
-		this.debug = new Debug(`${sobjectName}Service`);
+		this.debugService = debugFactory.create(`${sobjectName}Service`);
 	}
 
 	public async getSobjectFieldNames(sobjectName?: string) : Promise<string[]> {
@@ -59,27 +59,27 @@ export abstract class AbstractSobjectService extends SalesforceService {
 
 		return fieldNames;
 	}
-
-	public async retrieve<T>(ids: string) : Promise<T>;
-	public async retrieve<T>(ids: string[]) : Promise<T[]>;
-	public async retrieve<T>(ids: any) : Promise<any> {
-		if(Array.isArray(ids)) return this._performCrudAction<T[]>(ids, CrudAction.RETRIEVE);
-		return this._performCrudAction<T>(ids, CrudAction.RETRIEVE);
-	}
-
-	public async query(fieldNames: string[] | string, whereClause?: string) : Promise<QueryResult> {
-
+	
+	public async query(fieldNames: string[] | string, whereClause?: string) : Promise<QueryResult<T>> {
+		
 		if(fieldNames === '*') fieldNames = await this.getSobjectFieldNames();
 		whereClause = whereClause || '';
-
+		
 		const sobjectMetadata = await this._describeSobjectBase(this.sobjectName);
 		const soql = `SELECT ${fieldNames} FROM ${this.sobjectName} ${whereClause}`;
 		return await this._query(soql, sobjectMetadata.isTooling);
 	}
-
-	public async search(sosl: string) : Promise<Sobject[]> {
+	
+	public async search(sosl: string) : Promise<T[]> {
 		const result = await this._search(sosl);
 		return result.searchRecords;
+	}
+
+	public async retrieve(ids: string) : Promise<T>;
+	public async retrieve(ids: string[]) : Promise<T[]>;
+	public async retrieve(ids: any) : Promise<any> {
+		if(Array.isArray(ids)) return this._performCrudAction<T[]>(ids, CrudAction.RETRIEVE);
+		return this._performCrudAction<T>(ids, CrudAction.RETRIEVE);
 	}
 
 	public async create(data: any) : Promise<CrudResult>;
@@ -110,9 +110,9 @@ export abstract class AbstractSobjectService extends SalesforceService {
 		return this._performCrudAction<CrudResult>(data, CrudAction.UPSERT);
 	}
 
-	private async _performCrudAction<T>(data: any, action: CrudAction) : Promise<T> {
+	private async _performCrudAction<U>(data: any, action: CrudAction) : Promise<U> {
 
-		this.debug.verbose(`_performCrudAction() parameters:`, { data, action });
+		this.debugService.verbose(`_performCrudAction() parameters:`, { data, action });
 
 		try {
 
@@ -123,51 +123,50 @@ export abstract class AbstractSobjectService extends SalesforceService {
 
 			result = camelCaseKeys(result, { deep: true });
 
-			return result as T;
+			return result as U;
 
 		} catch (error) {
 
-			this.debug.error(`${action} failed for ${this.sobjectName}`, { data, error });
+			this.debugService.error(`${action} failed for ${this.sobjectName}`, { data, error });
 
 			const ex: JsforceError = error;
 			this.handleJsforceError(ex);
 		}
 	}
 
-	private async _query(soql: string, isToolingQuery: boolean = false) : Promise<QueryResult> {
+	private async _query(soql: string, isToolingQuery: boolean = false) : Promise<QueryResult<T>> {
 
-		this.debug.verbose(`_query() parameters:`, { soql, isToolingQuery });
+		this.debugService.verbose(`_query() parameters:`, { soql, isToolingQuery });
 
 		try {
 
-			//let queryResult = await (isToolingQuery ? this.conn.tooling.query(soql) : this.conn.query(soql));
 			let queryResult: any = await (isToolingQuery ? this.toolingQuery(soql) : this.standardQuery(soql));
-			this.debug.verbose(`Raw query result`, queryResult);
+			this.debugService.verbose(`Raw query result`, queryResult);
 
 			//1. To help be json api compliant
 			//2. Some data from Salesforce comes back as camelCase, other is PascalCased, don't want to have to
 			//force a mapping between these variations in our models so force camelCase here.
 			queryResult = camelCaseKeys(queryResult, { deep: true });
 
-			return queryResult as QueryResult;
+			return queryResult as QueryResult<T>;
 
 		} catch (error) {
 
-			this.debug.error(`_query() error`, error);
+			this.debugService.error(`_query() error`, error);
 			const ex: JsforceError = error;
 			this.handleJsforceError(ex);
 		}
 	}
 
-	private async _search(sosl: string, isTooling: boolean = false) : Promise<SearchResult> {
+	private async _search(sosl: string, isTooling: boolean = false) : Promise<SearchResult<T>> {
 
-		this.debug.verbose(`_search() parameters:`, { sosl, isTooling });
+		this.debugService.verbose(`_search() parameters:`, { sosl, isTooling });
 
 		try {
 
 			//let searchResult = await (isTooling ? this.conn.tooling.search(sosl) : this.conn.search(sosl));
 			let searchResult: any = await (isTooling ? this.toolingSearch(sosl) : this.standardSearch(sosl));
-			this.debug.verbose(`Raw search result`, searchResult);
+			this.debugService.verbose(`Raw search result`, searchResult);
 
 			searchResult = camelCaseKeys(searchResult as any, { deep: true });
 
@@ -176,7 +175,7 @@ export abstract class AbstractSobjectService extends SalesforceService {
 
 		} catch (error) {
 
-			this.debug.error(`_search() error`, error);
+			this.debugService.error(`_search() error`, error);
 			const ex: JsforceError = error;
 			this.handleJsforceError(ex);
 		}
@@ -189,7 +188,7 @@ export abstract class AbstractSobjectService extends SalesforceService {
 
 	protected async _describeSobject(sobjectName: string, organizationId: string, force: boolean = false) : Promise<SobjectDescribe> {
 
-		this.debug.verbose(`_describeSobject() parameters:`, { sobjectName, organizationId });
+		this.debugService.verbose(`_describeSobject() parameters:`, { sobjectName, organizationId });
 
 		try {
 			
@@ -213,7 +212,7 @@ export abstract class AbstractSobjectService extends SalesforceService {
 
 		} catch (error) {
 
-			this.debug.error(`_describeSobject() error`, error);
+			this.debugService.error(`_describeSobject() error`, error);
 			const ex: JsforceError = error;
 			this.handleJsforceError(ex);
 		}
@@ -221,7 +220,7 @@ export abstract class AbstractSobjectService extends SalesforceService {
 
 	protected async _globalDescribe(organizationId: string) : Promise<SobjectDescribeBase[]> {
 
-		this.debug.verbose(`_globalDescribe() parameters:`, { organizationId });
+		this.debugService.verbose(`_globalDescribe() parameters:`, { organizationId });
 
 		try {
 
@@ -246,7 +245,7 @@ export abstract class AbstractSobjectService extends SalesforceService {
 
 		} catch (error) {
 
-			this.debug.error(`_globalDescribe() error`, error);
+			this.debugService.error(`_globalDescribe() error`, error);
 			const ex: JsforceError = error;
 			this.handleJsforceError(ex);
 		}

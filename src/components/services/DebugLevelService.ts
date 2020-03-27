@@ -1,18 +1,14 @@
 import { AbstractSobjectService } from './AbstractSobjectService';
 import { DebugLevel } from '../../models/sobjects/DebugLevel';
 import { Connection } from '../../models/Connection';
+import { ICache } from '../../interfaces/ICache';
+import { IDebugLevelService } from './IDebugLevelService';
+import { DebugFactory } from '../../third-party-modules/debug/DebugFactory';
 
-export class DebugLevelService extends AbstractSobjectService {
+export class DebugLevelService extends AbstractSobjectService<DebugLevel> implements IDebugLevelService {
 
-	constructor(connection: Connection) {
-		super('DebugLevel', connection);
-	}
-
-	public async retrieve(ids: string) : Promise<DebugLevel>;
-	public async retrieve(ids: string[]) : Promise<DebugLevel[]>;
-	public async retrieve(ids: any) : Promise<any> {
-		if(Array.isArray(ids)) return await super.retrieve<DebugLevel[]>(ids);
-		return await super.retrieve<DebugLevel>(ids);
+	constructor(connection: Connection, cache: ICache, debugFactory: DebugFactory) {
+		super('DebugLevel', connection, cache, debugFactory);
 	}
 
 	async getDebugLevels(ids: string[], fieldsToQuery: string[]) : Promise<DebugLevel[]> {

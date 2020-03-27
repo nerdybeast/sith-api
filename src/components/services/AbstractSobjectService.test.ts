@@ -4,19 +4,23 @@ import { JsforceError } from '../../models/JsforceError';
 import { generateMockConnection, generateGlobalDescribe } from '../../test-helpers';
 import { CrudResult } from '../../models/CrudResult';
 import { ErrorCode } from '../../models/enums/error-code';
+import { MockCacheService } from '../cache/MockCacheService';
+import { Sobject } from '../../models/sobjects/Sobject';
+import { DebugFactory } from '../../third-party-modules/debug/DebugFactory';
+import debug from 'debug';
 
 describe('AbstractSobjectService', () => {
 
-	let mockSobjectService: AbstractSobjectService;
+	let mockSobjectService: AbstractSobjectService<Sobject>;
 
 	beforeAll(() => {
 
 		generateGlobalDescribe('MockSobject');
 		const connection = generateMockConnection();
 	
-		class MockSobjectService extends AbstractSobjectService {
+		class MockSobjectService extends AbstractSobjectService<Sobject> {
 			constructor() {
-				super('MockSobject', connection);
+				super('MockSobject', connection, new MockCacheService(), new DebugFactory(debug));
 			}
 		}
 	
