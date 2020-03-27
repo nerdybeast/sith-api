@@ -1,16 +1,15 @@
-import debug from 'debug';
+import Debug, { Debugger } from 'debug';
 
-export class Debug {
+export class DebugService {
 
-	private errorDebugger;
-	private warningDebugger;
-	private infoDebugger;
-	private verboseDebugger;
+	private errorDebugger: Debugger;
+	private warningDebugger: Debugger;
+	private infoDebugger: Debugger;
+	private verboseDebugger: Debugger;
 
-	constructor(debuggerName: string) {
+	constructor(debuggerName: string, debug: typeof Debug) {
 
 		const namespace = 'SITH-API';
-		//debug.enable(`${namespace}*`);
 
 		this.errorDebugger = debug(`${namespace}:error:${debuggerName}`);
 		this.warningDebugger = debug(`${namespace}:warning:${debuggerName}`);

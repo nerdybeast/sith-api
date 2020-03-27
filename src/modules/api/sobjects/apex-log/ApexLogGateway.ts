@@ -1,11 +1,12 @@
 import { Client as SocketIoClient, Server as SocketIoServer } from 'socket.io';
 import { WebSocketGateway, SubscribeMessage, WebSocketServer, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
-import { Debug } from '../../../../utilities/debug';
 import { ConnectionDetails } from '../../../../models/ConnectionDetails';
 import jsonapi from 'jsonapi-serializer';
 import { ApexLogsUpdateIPC } from '../../../../models/ipc/ApexLogsUpdateIPC';
 import { ApexLogFactory } from './ApexLogFactory';
 import { ApexLogPoller } from './ApexLogPoller';
+import { DebugService } from '../../../../third-party-modules/debug/DebugService';
+import { DebugFactory } from '../../../../third-party-modules/debug/DebugFactory';
 
 @WebSocketGateway({ namespace: 'APEX_LOGS' })
 export class ApexLogGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
@@ -13,13 +14,13 @@ export class ApexLogGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 	@WebSocketServer() server: SocketIoServer;
 
 	private apexLogFactory: ApexLogFactory;
+	private readonly debugService: DebugService;
 
-	constructor(apexLogFactory: ApexLogFactory) {
+	constructor(apexLogFactory: ApexLogFactory, debugFactory: DebugFactory) {
 		this.apexLogFactory = apexLogFactory;
+		this.debugService = debugFactory.create('ApexLogGateway');
 	}
 
-	private debug = new Debug('ApexLogGateway');
-	
 	/**
 	 * Map key is the socket id.
 	 */
@@ -31,16 +32,16 @@ export class ApexLogGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 	private pollingMap = new Map<string, ApexLogPoller>();
 
 	afterInit() {
-		this.debug.info(`apex-logs gateway initialized`);
+		this.debugService.info(`apex-logs gateway initialized`);
 	}
 
 	handleConnection(client: SocketIoClient) {
-		this.debug.info(`apex-logs client connected`, client.id);
+		this.debugService.info(`apex-logs client connected`, client.id);
 	}
 
 	handleDisconnect(client: SocketIoClient) {
 
-		this.debug.info(`apex-logs client disconnected`, client.id);
+		this.debugService.info(`apex-logs client disconnected`, client.id);
 
 		const connectionDetails = this.socketMap.get(client.id);
 		const apexLogPoller = this.pollingMap.get(connectionDetails.userId);

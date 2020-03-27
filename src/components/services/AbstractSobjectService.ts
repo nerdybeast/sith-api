@@ -7,7 +7,6 @@ import { ICache } from '../../interfaces/ICache';
 import { ConnectionDetails } from '../../models/ConnectionDetails';
 import { QueryResult } from '../../models/query-result';
 import { SobjectDescribe } from '../../models/salesforce-metadata/SobjectDescribe';
-import { Debug } from '../../utilities/debug';
 import { CrudResult } from '../../models/CrudResult';
 import { SobjectDescribeBase } from '../../models/salesforce-metadata/SobjectDescribeBase';
 import { CrudAction } from '../../models/enums/crud-action';
@@ -19,6 +18,8 @@ import { SearchResult } from '../../models/SearchResult';
 import { SalesforceService } from './SalesforceService';
 import { ApiType } from '../../models/enums/ApiType';
 import { CacheDurationEnum } from '../../utilities/cache-helpers/CacheDurationEnum';
+import { DebugFactory } from '../../third-party-modules/debug/DebugFactory';
+import { DebugService } from '../../third-party-modules/debug/DebugService';
 
 export abstract class AbstractSobjectService<T extends Sobject> extends SalesforceService<T> {
 
@@ -26,9 +27,9 @@ export abstract class AbstractSobjectService<T extends Sobject> extends Salesfor
 	protected connectionDetails: ConnectionDetails;
 	protected cache: ICache;
 	protected conn: any;
-	protected debug: Debug;
+	protected debugService: DebugService;
 
-	constructor(sobjectName: string, connection: Connection, cache: ICache) {
+	constructor(sobjectName: string, connection: Connection, cache: ICache, debugFactory: DebugFactory) {
 
 		super(connection);
 
@@ -38,7 +39,7 @@ export abstract class AbstractSobjectService<T extends Sobject> extends Salesfor
 
 		this.conn = connection.jsforce;
 
-		this.debug = new Debug(`${sobjectName}Service`);
+		this.debugService = debugFactory.create(`${sobjectName}Service`);
 	}
 
 	public async getSobjectFieldNames(sobjectName?: string) : Promise<string[]> {
@@ -111,7 +112,7 @@ export abstract class AbstractSobjectService<T extends Sobject> extends Salesfor
 
 	private async _performCrudAction<U>(data: any, action: CrudAction) : Promise<U> {
 
-		this.debug.verbose(`_performCrudAction() parameters:`, { data, action });
+		this.debugService.verbose(`_performCrudAction() parameters:`, { data, action });
 
 		try {
 
@@ -126,7 +127,7 @@ export abstract class AbstractSobjectService<T extends Sobject> extends Salesfor
 
 		} catch (error) {
 
-			this.debug.error(`${action} failed for ${this.sobjectName}`, { data, error });
+			this.debugService.error(`${action} failed for ${this.sobjectName}`, { data, error });
 
 			const ex: JsforceError = error;
 			this.handleJsforceError(ex);
@@ -135,12 +136,12 @@ export abstract class AbstractSobjectService<T extends Sobject> extends Salesfor
 
 	private async _query(soql: string, isToolingQuery: boolean = false) : Promise<QueryResult<T>> {
 
-		this.debug.verbose(`_query() parameters:`, { soql, isToolingQuery });
+		this.debugService.verbose(`_query() parameters:`, { soql, isToolingQuery });
 
 		try {
 
 			let queryResult: any = await (isToolingQuery ? this.toolingQuery(soql) : this.standardQuery(soql));
-			this.debug.verbose(`Raw query result`, queryResult);
+			this.debugService.verbose(`Raw query result`, queryResult);
 
 			//1. To help be json api compliant
 			//2. Some data from Salesforce comes back as camelCase, other is PascalCased, don't want to have to
@@ -151,7 +152,7 @@ export abstract class AbstractSobjectService<T extends Sobject> extends Salesfor
 
 		} catch (error) {
 
-			this.debug.error(`_query() error`, error);
+			this.debugService.error(`_query() error`, error);
 			const ex: JsforceError = error;
 			this.handleJsforceError(ex);
 		}
@@ -159,13 +160,13 @@ export abstract class AbstractSobjectService<T extends Sobject> extends Salesfor
 
 	private async _search(sosl: string, isTooling: boolean = false) : Promise<SearchResult<T>> {
 
-		this.debug.verbose(`_search() parameters:`, { sosl, isTooling });
+		this.debugService.verbose(`_search() parameters:`, { sosl, isTooling });
 
 		try {
 
 			//let searchResult = await (isTooling ? this.conn.tooling.search(sosl) : this.conn.search(sosl));
 			let searchResult: any = await (isTooling ? this.toolingSearch(sosl) : this.standardSearch(sosl));
-			this.debug.verbose(`Raw search result`, searchResult);
+			this.debugService.verbose(`Raw search result`, searchResult);
 
 			searchResult = camelCaseKeys(searchResult as any, { deep: true });
 
@@ -174,7 +175,7 @@ export abstract class AbstractSobjectService<T extends Sobject> extends Salesfor
 
 		} catch (error) {
 
-			this.debug.error(`_search() error`, error);
+			this.debugService.error(`_search() error`, error);
 			const ex: JsforceError = error;
 			this.handleJsforceError(ex);
 		}
@@ -187,7 +188,7 @@ export abstract class AbstractSobjectService<T extends Sobject> extends Salesfor
 
 	protected async _describeSobject(sobjectName: string, organizationId: string, force: boolean = false) : Promise<SobjectDescribe> {
 
-		this.debug.verbose(`_describeSobject() parameters:`, { sobjectName, organizationId });
+		this.debugService.verbose(`_describeSobject() parameters:`, { sobjectName, organizationId });
 
 		try {
 			
@@ -211,7 +212,7 @@ export abstract class AbstractSobjectService<T extends Sobject> extends Salesfor
 
 		} catch (error) {
 
-			this.debug.error(`_describeSobject() error`, error);
+			this.debugService.error(`_describeSobject() error`, error);
 			const ex: JsforceError = error;
 			this.handleJsforceError(ex);
 		}
@@ -219,7 +220,7 @@ export abstract class AbstractSobjectService<T extends Sobject> extends Salesfor
 
 	protected async _globalDescribe(organizationId: string) : Promise<SobjectDescribeBase[]> {
 
-		this.debug.verbose(`_globalDescribe() parameters:`, { organizationId });
+		this.debugService.verbose(`_globalDescribe() parameters:`, { organizationId });
 
 		try {
 
@@ -244,7 +245,7 @@ export abstract class AbstractSobjectService<T extends Sobject> extends Salesfor
 
 		} catch (error) {
 
-			this.debug.error(`_globalDescribe() error`, error);
+			this.debugService.error(`_globalDescribe() error`, error);
 			const ex: JsforceError = error;
 			this.handleJsforceError(ex);
 		}

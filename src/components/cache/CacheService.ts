@@ -31,7 +31,7 @@ export class CacheService implements ICache {
 
 		return new Promise((resolve, reject) => {
 
-			this.redisClient.set(key, JSON.stringify(val), 'EX', ttlInSeconds, (err, reply) => {
+			this.redisClient.set(key, JSON.stringify(val), 'EX', ttlInSeconds, (err, _reply) => {
 
 				if(err) {
 					return reject(err);

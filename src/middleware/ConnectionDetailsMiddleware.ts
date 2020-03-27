@@ -5,7 +5,7 @@ import { Request, Response } from 'express';
 @Injectable()
 export class ConnectionDetailsMiddleware implements NestMiddleware {
 	
-	use(req: Request, res: Response, next: () => void) {
+	use(req: Request, _res: Response, next: () => void) {
 
 		const connectionDetails = new ConnectionDetails();
 		connectionDetails.instanceUrl = req.headers['instance-url'] as string;

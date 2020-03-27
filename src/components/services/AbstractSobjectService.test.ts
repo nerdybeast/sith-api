@@ -6,6 +6,8 @@ import { CrudResult } from '../../models/CrudResult';
 import { ErrorCode } from '../../models/enums/error-code';
 import { MockCacheService } from '../cache/MockCacheService';
 import { Sobject } from '../../models/sobjects/Sobject';
+import { DebugFactory } from '../../third-party-modules/debug/DebugFactory';
+import debug from 'debug';
 
 describe('AbstractSobjectService', () => {
 
@@ -18,7 +20,7 @@ describe('AbstractSobjectService', () => {
 	
 		class MockSobjectService extends AbstractSobjectService<Sobject> {
 			constructor() {
-				super('MockSobject', connection, new MockCacheService());
+				super('MockSobject', connection, new MockCacheService(), new DebugFactory(debug));
 			}
 		}
 	

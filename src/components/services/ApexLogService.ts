@@ -4,13 +4,14 @@ import Got from 'got';
 import { Connection } from '../../models/Connection';
 import { ICache } from '../../interfaces/ICache';
 import { IApexLogService } from './IApexLogService';
+import { DebugFactory } from '../../third-party-modules/debug/DebugFactory';
 
 export class ApexLogService extends AbstractSobjectService<ApexLog> implements IApexLogService {
 
 	private got: typeof Got;
 
-	constructor(connection: Connection, cache: ICache, got: typeof Got) {
-		super('ApexLog', connection, cache);
+	constructor(connection: Connection, cache: ICache, got: typeof Got, debugFactory: DebugFactory) {
+		super('ApexLog', connection, cache, debugFactory);
 		this.got = got;
 	}
 
@@ -39,9 +40,9 @@ export class ApexLogService extends AbstractSobjectService<ApexLog> implements I
 
 	async getApexLogs(userId: string, fieldsToQuery: string[], limit?: number) : Promise<ApexLog[]> {
 		
-		this.debug.verbose('getApexLogs() parameters:');
-		this.debug.verbose('userId', userId);
-		this.debug.verbose('fieldsToQuery', fieldsToQuery);
+		this.debugService.verbose('getApexLogs() parameters:');
+		this.debugService.verbose('userId', userId);
+		this.debugService.verbose('fieldsToQuery', fieldsToQuery);
 		
 		const apexLogRecords = await this.getByUserId(userId, fieldsToQuery, limit);
 		const apexLogs = await this.attachBody(apexLogRecords);
@@ -63,7 +64,7 @@ export class ApexLogService extends AbstractSobjectService<ApexLog> implements I
 			return response.body.trim();
 
 		} catch (error) {
-			this.debug.error(`Error fetching the debug log body for "${id}"`, error);
+			this.debugService.error(`Error fetching the debug log body for "${id}"`, error);
 			throw error;
 		}
 	}

@@ -14,7 +14,8 @@
 		"target": "es6",
 		"sourceMap": true,
 		"allowJs": true,
-		"outDir": "./dist"
+		"outDir": "./dist",
+		"noUnusedParameters": true
 	},
 	"include": [
 		"src/**/*"

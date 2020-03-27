@@ -8,11 +8,13 @@ import { GlobalAnyExceptionFilterProvider } from '../components/filters/GlobalAn
 import { GlobalHttpExceptionFilterProvider } from '../components/filters/GlobalHttpExceptionFilter';
 import { NotFoundExceptionFilterProvider } from '../components/filters/NotFoundExceptionFilter';
 import { RollbarModule } from '../third-party-modules/RollbarModule';
+import { DebugModule } from '../third-party-modules/debug/DebugModule';
 
 @Module({
 	imports: [
 		ConfigModule, //Global module, only needs to be imported here
 		RollbarModule, //Global module, only needs to be imported here
+		DebugModule, //Global module, only needs to be imported here
 		UserModule,
 		OrgModule,
 		ApiModule

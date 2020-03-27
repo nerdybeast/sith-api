@@ -3,14 +3,16 @@ import cors from 'cors';
 import morgan from 'morgan';
 import bodyParser from 'body-parser';
 import { ApplicationModule } from './modules/app-module';
-import { Debug } from './utilities/debug';
 import { ConfigService } from './components/config/ConfigService';
 import { Logger } from '@nestjs/common';
+import { DebugFactory } from './third-party-modules/debug/DebugFactory';
 
 (async function bootstrap() {
 
 	const app = await NestFactory.create(ApplicationModule);
 	const configService = app.get(ConfigService);
+	const debugFactory = app.get(DebugFactory);
+	const debugService = debugFactory.create(__filename);
 
 	app.use(morgan('dev'));
 	app.use(cors());
@@ -21,6 +23,5 @@ import { Logger } from '@nestjs/common';
 	const logger = new Logger('Bootstrap');
 	await app.listen(configService.PORT, () => logger.log(`Api is running on port ${configService.PORT}...`));
 
-	const debug = new Debug('server');
-	debug.info('main process id', process.pid);
+	debugService.info('main process id', process.pid);
 })();

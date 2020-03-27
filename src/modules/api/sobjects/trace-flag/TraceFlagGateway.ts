@@ -1,24 +1,25 @@
 import { WebSocketGateway, SubscribeMessage, WebSocketServer, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
-import { Debug } from '../../../../utilities/debug';
 import { ConnectionDetails } from '../../../../models/ConnectionDetails';
 import { TraceFlagService } from '../../../../components/services/TraceFlagService';
 import { TraceFlagsUpdateIPC } from '../../../../models/ipc/TraceFlagsUpdateIPC';
 import { Client as SocketIoClient, Server as SocketIoServer } from 'socket.io';
 import { TraceFlagPoller } from './TraceFlagPoller';
 import { TraceFlagFactory } from './TraceFlagFactory';
+import { DebugService } from '../../../../third-party-modules/debug/DebugService';
+import { DebugFactory } from '../../../../third-party-modules/debug/DebugFactory';
 
 @WebSocketGateway({ namespace: 'TRACE_FLAGS' })
 export class TraceFlagGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
 
 	private traceFlagFactory: TraceFlagFactory;
+	private readonly debugService: DebugService;
 
-	constructor(traceFlagFactory: TraceFlagFactory) {
+	constructor(traceFlagFactory: TraceFlagFactory, debugFactory: DebugFactory) {
 		this.traceFlagFactory = traceFlagFactory;
+		this.debugService = debugFactory.create('TraceFlagGateway');
 	}
 
 	@WebSocketServer() server: SocketIoServer;
-
-	private debug = new Debug('TraceFlagGateway');
 
 	//Key is the socket id
 	private socketMap = new Map<string, ConnectionDetails>();
@@ -27,16 +28,16 @@ export class TraceFlagGateway implements OnGatewayInit, OnGatewayConnection, OnG
 	private pollingMap = new Map<string, TraceFlagPoller>();
 
 	afterInit() : void {
-		this.debug.info(`trace-flags gateway initialized`);
+		this.debugService.info(`trace-flags gateway initialized`);
 	}
 
 	handleConnection(client: SocketIoClient) : void {
-		this.debug.info(`trace-flags client connected`, client.id);
+		this.debugService.info(`trace-flags client connected`, client.id);
 	}
 
 	handleDisconnect(client: SocketIoClient) : void {
 		
-		this.debug.info(`trace-flags client disconnected`, client.id);
+		this.debugService.info(`trace-flags client disconnected`, client.id);
 
 		const connectionDetails: ConnectionDetails = this.socketMap.get(client.id);
 		const traceFlagPoller: TraceFlagPoller = this.pollingMap.get(connectionDetails.userId);

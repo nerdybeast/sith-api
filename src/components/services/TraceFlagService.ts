@@ -6,19 +6,20 @@ import { Connection } from '../../models/Connection';
 import { ICache } from '../../interfaces/ICache';
 import { ITraceFlagService } from './ITraceFlagService';
 import { IDebugLevelService } from './IDebugLevelService';
+import { DebugFactory } from '../../third-party-modules/debug/DebugFactory';
 
 export class TraceFlagService extends AbstractSobjectService<TraceFlag> implements ITraceFlagService {
 
 	private readonly _debugLevelService: IDebugLevelService;
 
-	constructor(connection: Connection, cache: ICache, debugLevelService: IDebugLevelService) {
-		super('TraceFlag', connection, cache);
+	constructor(connection: Connection, cache: ICache, debugLevelService: IDebugLevelService, debugFactory: DebugFactory) {
+		super('TraceFlag', connection, cache, debugFactory);
 		this._debugLevelService = debugLevelService;
 	}
 
 	public async getTraceFlags(userId: string, fieldsToQuery?: string[], debugLevelFieldsToQuery?: string[]) : Promise<TraceFlag[]> {
 
-		this.debug.verbose('getTraceFlags() parameters:', { userId, fieldsToQuery });
+		this.debugService.verbose('getTraceFlags() parameters:', { userId, fieldsToQuery });
 
 		fieldsToQuery = fieldsToQuery || await this.getSobjectFieldNames();
 		const traceFlagQueryResult = await this.query(fieldsToQuery, `Where TracedEntityId = '${userId}' Or CreatedById = '${userId}'`);
@@ -61,7 +62,7 @@ export class TraceFlagService extends AbstractSobjectService<TraceFlag> implemen
 	public async update(traceFlags: TraceFlag[]) : Promise<CrudResult[]>;
 	public async update(traceFlags: any) : Promise<any> {
 
-		this.debug.verbose('updateTraceFlag() parameters:', { traceFlags });
+		this.debugService.verbose('updateTraceFlag() parameters:', { traceFlags });
 
 		if(Array.isArray(traceFlags)) {
 			traceFlags = traceFlags.map(tf => this.transformForUpdate(tf));

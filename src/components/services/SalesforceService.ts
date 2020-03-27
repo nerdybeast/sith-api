@@ -3,7 +3,6 @@ import { GlobalDescribe } from '../../models/salesforce-metadata/GlobalDescribe'
 import { DescribeMetadataResult } from '../../models/salesforce-metadata/DescribeMetadataResult';
 import { SearchResult } from '../../models/SearchResult';
 import { QueryResult } from '../../models/query-result';
-import { Debug } from '../../utilities/debug';
 import { ApiType } from '../../models/enums/ApiType';
 import { CrudAction } from '../../models/enums/crud-action';
 import { Sobject } from '../../models/sobjects/Sobject';
@@ -11,12 +10,12 @@ import { FileProperties } from '../../models/salesforce-metadata/FileProperties'
 
 export abstract class SalesforceService<T extends Sobject> {
 
+	protected connection: Connection;
 	protected conn: any;
-	protected debug: Debug;
 
-	constructor(protected connection: Connection) {
+	constructor(connection: Connection) {
+		this.connection = connection;
 		this.conn = connection.jsforce;
-		this.debug = new Debug(`SalesforceService`);
 	}
 
 	protected async standardGlobalDescribe() : Promise<GlobalDescribe> {
@@ -27,7 +26,7 @@ export abstract class SalesforceService<T extends Sobject> {
 		return await this.conn.tooling.describeGlobal();
 	}
 
-	protected async metadataGlobalDescribe(apiVersion: string) : Promise<DescribeMetadataResult> {
+	protected async metadataGlobalDescribe(_apiVersion: string) : Promise<DescribeMetadataResult> {
 		return await this.conn.metadata.describe();
 	}
 
